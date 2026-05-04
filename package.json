@@ -1,0 +1,9 @@
+{
+  "name": "ai-charm-match",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@vercel/blob": "^0.23.0",
+    "openai": "^4.56.0"
+  }
+}

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI 소개팅 매력 테스트</title>
+  <meta name="description" content="AI가 내 소개팅 프로필 사진 매력도를 분석해드립니다. 상위 몇 %인지 확인해보세요!">
+  <meta property="og:title" content="AI 소개팅 매력 테스트">
+  <meta property="og:description" content="AI가 분석한 내 소개팅 매력 점수는?">
+  <meta property="og:image" content="/og-image.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #FF6B8A;
+      --primary-light: #FFD6DF;
+      --primary-dark: #E84D6E;
+      --peach: #FFAA5A;
+      --peach-light: #FFF0E0;
+      --bg: #FFF8F5;
+      --surface: #FFFFFF;
+      --text: #1A1A2E;
+      --text-secondary: #6B6B7B;
+      --text-muted: #B0B0C0;
+      --border: #F0E8E8;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --shadow: 0 4px 24px rgba(255,107,138,0.10);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    html, body { height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    #app { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Section switching */
+    .section { display: none; flex-direction: column; align-items: center; min-height: 100vh; padding: 0; }
+    .section.active { display: flex; }
+    .inner { width: 100%; max-width: 480px; padding: 0 20px; margin: 0 auto; }
+
+    /* ── Upload Section ── */
+    #sec-upload { background: var(--bg); justify-content: flex-start; }
+    .upload-header { width: 100%; max-width: 480px; padding: 52px 20px 0; }
+    .logo-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--primary-light); color: var(--primary-dark);
+      font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 100px;
+      margin-bottom: 20px; letter-spacing: 0.02em;
+    }
+    .hero-title { font-size: 28px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; }
+    .hero-title span { color: var(--primary); }
+    .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; }
+
+    .upload-zone {
+      width: 100%; max-width: 480px; padding: 0 20px 20px;
+    }
+    .drop-area {
+      border: 2.5px dashed var(--primary-light);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .drop-area:hover, .drop-area.drag-over { border-color: var(--primary); background: #FFF0F4; }
+    .drop-area.has-preview { padding: 0; border-style: solid; border-color: var(--primary); }
+    .drop-icon { font-size: 40px; margin-bottom: 12px; }
+    .drop-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .drop-sub { font-size: 13px; color: var(--text-muted); }
+    #preview-img { width: 100%; max-height: 340px; object-fit: cover; border-radius: calc(var(--radius) - 2.5px); display: none; }
+    #file-input { display: none; }
+    .upload-actions { margin-top: 16px; display: flex; gap: 10px; }
+    .btn-primary {
+      flex: 1; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); padding: 16px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; font-family: inherit; letter-spacing: -0.01em;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,107,138,0.35); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { background: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary {
+      flex: 1; background: var(--surface); color: var(--text-secondary);
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 16px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+    .notice-strip {
+      background: var(--peach-light); border-radius: var(--radius-sm);
+      padding: 14px 16px; font-size: 13px; color: #7A5000; line-height: 1.6;
+      margin-top: 16px;
+    }
+    .notice-strip strong { font-weight: 700; }
+    .counter-info { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 12px; }
+
+    /* ── Analyzing Section ── */
+    #sec-analyzing { background: var(--bg); justify-content: center; }
+    .analyzing-wrap { text-align: center; padding: 40px 20px; width: 100%; max-width: 480px; }
+    .analyzing-circle {
+      width: 120px; height: 120px; margin: 0 auto 32px;
+      border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), var(--peach-light));
+      display: flex; align-items: center; justify-content: center;
+      animation: pulse 1.5s ease-in-out infinite;
+      position: relative;
+    }
+    .analyzing-circle::after {
+      content: ''; position: absolute; inset: -6px;
+      border-radius: 50%; border: 3px solid transparent;
+      border-top-color: var(--primary);
+      animation: spin 1.2s linear infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .analyzing-icon { font-size: 48px; }
+    .analyzing-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    .analyzing-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .analyzing-steps { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; }
+    .step-item { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-muted); padding: 12px 16px; background: var(--surface); border-radius: var(--radius-sm); transition: all 0.4s; }
+    .step-item.done { color: var(--text); }
+    .step-item.active { color: var(--primary); font-weight: 600; background: var(--primary-light); }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: all 0.4s; }
+    .step-item.done .step-dot { background: #34C759; }
+    .step-item.active .step-dot { background: var(--primary); animation: pulse 1s infinite; }
+
+    /* ── Result Section ── */
+    #sec-result { background: var(--bg); justify-content: flex-start; padding-bottom: 40px; }
+    .result-header {
+      width: 100%; background: linear-gradient(160deg, var(--primary) 0%, #FF8FAB 60%, var(--peach) 100%);
+      padding: 52px 20px 36px; text-align: center; color: #fff;
+      clip-path: ellipse(100% 85% at 50% 0%);
+      margin-bottom: 28px;
+    }
+    .result-score-label { font-size: 14px; font-weight: 600; opacity: 0.85; margin-bottom: 4px; }
+    .result-score { font-size: 72px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+    .result-score sup { font-size: 28px; font-weight: 700; vertical-align: super; }
+    .result-percentile {
+      display: inline-block; background: rgba(255,255,255,0.25);
+      padding: 5px 16px; border-radius: 100px; font-size: 14px; font-weight: 700;
+      margin-bottom: 14px; backdrop-filter: blur(4px);
+    }
+    .result-oneliner { font-size: 20px; font-weight: 700; line-height: 1.4; }
+    .result-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+    .tag { background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); border-radius: 100px; padding: 5px 14px; font-size: 12px; font-weight: 600; }
+
+    .result-body { width: 100%; max-width: 480px; padding: 0 20px; }
+    .card {
+      background: var(--surface); border-radius: var(--radius); padding: 20px;
+      margin-bottom: 14px; box-shadow: var(--shadow-sm);
+    }
+    .card-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+    .summary-text { font-size: 15px; line-height: 1.7; color: var(--text); }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+    .stat-label { font-size: 11px; color: var(--text-muted); }
+
+    .breakdown-list { display: flex; flex-direction: column; gap: 12px; }
+    .breakdown-item { }
+    .breakdown-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .breakdown-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .breakdown-score { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .breakdown-bar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .breakdown-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--peach)); border-radius: 100px; transition: width 0.8s ease; }
+
+    .info-list { display: flex; flex-direction: column; gap: 12px; }
+    .info-item { display: flex; gap: 12px; align-items: flex-start; }
+    .info-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .info-content { }
+    .info-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 2px; }
+    .info-value { font-size: 14px; color: var(--text); line-height: 1.5; }
+
+    .advice-box { background: var(--peach-light); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 14px; color: #7A5000; line-height: 1.6; }
+
+    .cta-section { margin-top: 8px; }
+    .btn-cta {
+      width: 100%; background: linear-gradient(135deg, var(--primary), var(--peach));
+      color: #fff; border: none; border-radius: var(--radius-sm); padding: 18px;
+      font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; letter-spacing: -0.01em;
+      box-shadow: 0 4px 20px rgba(255,107,138,0.35);
+    }
+    .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(255,107,138,0.45); }
+    .btn-cta:active { transform: translateY(0); }
+    .btn-share {
+      width: 100%; background: var(--surface); color: var(--text);
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 15px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-share:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-retry {
+      width: 100%; background: transparent; color: var(--text-muted);
+      border: none; padding: 12px; font-size: 13px; cursor: pointer; font-family: inherit;
+      margin-top: 4px;
+    }
+    .btn-retry:hover { color: var(--text); }
+    .disclaimer { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-top: 14px; padding: 0 10px; }
+
+    /* ── Register Section ── */
+    #sec-register { background: var(--bg); justify-content: flex-start; }
+    .reg-header {
+      width: 100%; max-width: 480px; padding: 52px 20px 0;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .btn-back {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      color: var(--text-secondary); font-size: 20px; display: flex; align-items: center;
+    }
+    .reg-title { font-size: 16px; font-weight: 700; }
+    .progress-bar-wrap {
+      width: 100%; max-width: 480px; padding: 14px 20px 0;
+    }
+    .progress-track { height: 4px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--peach)); border-radius: 100px; transition: width 0.4s ease; }
+    .progress-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; text-align: right; }
+
+    .step-container { width: 100%; max-width: 480px; padding: 32px 20px 40px; }
+    .step-question { font-size: 22px; font-weight: 800; line-height: 1.4; margin-bottom: 8px; }
+    .step-hint { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.5; }
+
+    .option-list { display: flex; flex-direction: column; gap: 10px; }
+    .option-btn {
+      width: 100%; background: var(--surface); border: 2px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 18px; font-size: 15px; font-weight: 600;
+      color: var(--text); cursor: pointer; text-align: left; font-family: inherit;
+      transition: all 0.15s; display: flex; align-items: center; gap: 12px;
+    }
+    .option-btn:hover { border-color: var(--primary-light); background: #FFF8FA; }
+    .option-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+    .option-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .option-btn.selected .option-check { background: var(--primary); border-color: var(--primary); color: #fff; font-size: 13px; }
+
+    .text-input {
+      width: 100%; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      padding: 16px 18px; font-size: 16px; font-family: inherit; color: var(--text);
+      background: var(--surface); outline: none; transition: border-color 0.2s;
+    }
+    .text-input:focus { border-color: var(--primary); }
+    .text-input::placeholder { color: var(--text-muted); }
+    textarea.text-input { resize: none; height: 100px; }
+
+    .btn-next {
+      width: 100%; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); padding: 17px;
+      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: all 0.2s; margin-top: 24px;
+    }
+    .btn-next:disabled { background: var(--text-muted); cursor: not-allowed; }
+    .btn-next:not(:disabled):hover { background: var(--primary-dark); }
+    .btn-skip { width: 100%; background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: inherit; padding: 10px; margin-top: 4px; }
+
+    /* Priority sliders */
+    .slider-group { display: flex; flex-direction: column; gap: 18px; }
+    .slider-item { }
+    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .slider-label { font-size: 15px; font-weight: 600; }
+    .slider-val { font-size: 18px; font-weight: 800; color: var(--primary); min-width: 44px; text-align: right; }
+    input[type="range"] {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 6px; background: var(--border); border-radius: 100px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--primary); cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255,107,138,0.4);
+    }
+    .slider-total { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+    .slider-total.error { color: #FF3B30; font-weight: 700; }
+
+    /* Consent step */
+    .consent-list { display: flex; flex-direction: column; gap: 12px; }
+    .consent-item {
+      display: flex; align-items: flex-start; gap: 14px; padding: 16px;
+      background: var(--surface); border-radius: var(--radius-sm); cursor: pointer;
+    }
+    .consent-check {
+      width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; margin-top: 1px;
+    }
+    .consent-check.checked { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .consent-text { font-size: 14px; line-height: 1.6; color: var(--text); }
+    .consent-text strong { font-weight: 700; display: block; margin-bottom: 2px; }
+    .consent-text small { color: var(--text-muted); font-size: 12px; }
+
+    /* ── Complete Section ── */
+    #sec-complete { background: var(--bg); justify-content: center; }
+    .complete-wrap { text-align: center; padding: 40px 20px; max-width: 480px; width: 100%; }
+    .complete-icon { font-size: 64px; margin-bottom: 24px; animation: pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+    .complete-title { font-size: 26px; font-weight: 800; line-height: 1.3; margin-bottom: 12px; }
+    .complete-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 32px; }
+    .complete-card { background: var(--surface); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; text-align: left; }
+    .complete-card-title { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .complete-info-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .complete-info-row:last-child { border-bottom: none; }
+    .complete-info-label { color: var(--text-muted); }
+    .complete-info-val { font-weight: 600; color: var(--text); }
+    .delete-link-box {
+      background: #FFF4F4; border: 1.5px solid #FFCDD2; border-radius: var(--radius-sm);
+      padding: 14px 16px; font-size: 13px; color: #B71C1C; line-height: 1.6; margin-top: 8px;
+    }
+    .delete-link-box strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    #delete-token-display { font-family: monospace; font-size: 11px; word-break: break-all; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; margin-top: 4px; display: block; }
+    .btn-copy { background: none; border: 1px solid currentColor; border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; font-family: inherit; color: #B71C1C; margin-top: 6px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--text); color: #fff; padding: 12px 20px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 9999; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 390px) {
+      .hero-title { font-size: 24px; }
+      .result-score { font-size: 60px; }
+      .step-question { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── UPLOAD ── -->
+  <section id="sec-upload" class="section active">
+    <div class="upload-header inner">
+      <div class="logo-badge">✨ AI CHARM MATCH</div>
+      <h1 class="hero-title">내 소개팅 매력,<br>AI에게 <span>솔직하게</span> 물어봤다</h1>
+      <p class="hero-sub">사진 한 장으로 소개팅 매력 점수를 분석해드려요.<br>상위 몇 %인지 바로 확인해보세요.</p>
+    </div>
+    <div class="upload-zone inner">
+      <div class="drop-area" id="drop-area">
+        <img id="preview-img" alt="미리보기">
+        <div id="drop-placeholder">
+          <div class="drop-icon">🤳</div>
+          <div class="drop-title">사진을 올려주세요</div>
+          <div class="drop-sub">얼굴이 잘 보이는 사진이 좋아요<br>탭해서 사진 보관함 열기</div>
+        </div>
+        <input type="file" id="file-input" accept="image/*">
+      </div>
+      <div class="upload-actions">
+        <button class="btn-secondary" id="btn-change-photo" style="display:none" onclick="resetPhoto()">다시 선택</button>
+        <button class="btn-primary" id="btn-analyze" disabled onclick="startAnalyze()">분석 시작하기</button>
+      </div>
+      <div class="notice-strip">
+        <strong>📸 사진 안내</strong><br>
+        분석 중에는 사진이 저장되지 않아요. 사진은 AI 분석에만 사용되고 즉시 삭제됩니다.
+        사전등록 시에만 별도 동의 후 저장돼요.
+      </div>
+      <div class="counter-info" id="analyze-counter"></div>
+    </div>
+  </section>
+
+  <!-- ── ANALYZING ── -->
+  <section id="sec-analyzing" class="section">
+    <div class="analyzing-wrap">
+      <div class="analyzing-circle">
+        <span class="analyzing-icon">🔍</span>
+      </div>
+      <div class="analyzing-title">AI가 분석하고 있어요</div>
+      <div class="analyzing-sub">소개팅 매력을 꼼꼼하게 살펴보는 중...<br>잠시만 기다려주세요</div>
+      <div class="analyzing-steps">
+        <div class="step-item" id="step1"><span class="step-dot"></span> 첫인상 파악 중</div>
+        <div class="step-item" id="step2"><span class="step-dot"></span> 표정 & 분위기 분석 중</div>
+        <div class="step-item" id="step3"><span class="step-dot"></span> 스타일 & 사진 컨디션 체크</div>
+        <div class="step-item" id="step4"><span class="step-dot"></span> 소개팅 매력 점수 계산 중</div>
+        <div class="step-item" id="step5"><span class="step-dot"></span> 결과 문구 작성 중</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RESULT ── -->
+  <section id="sec-result" class="section">
+    <div class="result-header">
+      <div class="result-score-label">소개팅 매력 점수</div>
+      <div class="result-score"><span id="r-score">0</span><sup>점</sup></div>
+      <div class="result-percentile" id="r-percentile">상위 -%</div>
+      <div class="result-oneliner" id="r-oneliner"></div>
+      <div class="result-tags" id="r-tags"></div>
+    </div>
+    <div class="result-body">
+      <div class="card">
+        <div class="card-title">AI 분석 요약</div>
+        <p class="summary-text" id="r-summary"></p>
+      </div>
+      <div class="card">
+        <div class="card-title">AI 예측</div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="r-confessions"></div>
+            <div class="stat-label">고백받은 횟수</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="r-relations"></div>
+            <div class="stat-label">연애 경험</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="r-age"></div>
+            <div class="stat-label">예상 나이대</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">점수 구성</div>
+        <div class="breakdown-list" id="r-breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI가 본 내 모습</div>
+        <div class="info-list">
+          <div class="info-item"><span class="info-icon">💝</span><div class="info-content"><div class="info-label">연애 캐릭터</div><div class="info-value" id="r-personality"></div></div></div>
+          <div class="info-item"><span class="info-icon">🌸</span><div class="info-content"><div class="info-label">어울리는 첫 데이트</div><div class="info-value" id="r-datescene"></div></div></div>
+          <div class="info-item"><span class="info-icon">👗</span><div class="info-content"><div class="info-label">스타일 예측</div><div class="info-value" id="r-style"></div></div></div>
+          <div class="info-item"><span class="info-icon">🗣️</span><div class="info-content"><div class="info-label">친구들 반응</div><div class="info-value" id="r-friendreaction"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">사진 팁</div>
+        <div class="advice-box" id="r-advice"></div>
+      </div>
+      <div class="cta-section">
+        <button class="btn-cta" onclick="goToRegister()">💌 AI 소개팅 사전등록 하기</button>
+        <button class="btn-share" onclick="shareResult()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          친구에게 공유하기
+        </button>
+        <button class="btn-retry" onclick="retryAnalyze()">↩ 다른 사진으로 다시 분석</button>
+      </div>
+      <p class="disclaimer">이 결과는 순수 엔터테인먼트 목적의 AI 분석으로, 실제 외모 평가와 무관합니다.<br>AI 분석 결과는 참고용이며 개인차가 있을 수 있어요.</p>
+    </div>
+  </section>
+
+  <!-- ── REGISTER ── -->
+  <section id="sec-register" class="section">
+    <div class="reg-header inner">
+      <button class="btn-back" onclick="regBack()">←</button>
+      <span class="reg-title">AI 소개팅 사전등록</span>
+    </div>
+    <div class="progress-bar-wrap inner">
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-text" id="prog-text">1 / 16</div>
+    </div>
+    <div class="step-container inner" id="step-container"></div>
+  </section>
+
+  <!-- ── COMPLETE ── -->
+  <section id="sec-complete" class="section">
+    <div class="complete-wrap">
+      <div class="complete-icon">🎉</div>
+      <h2 class="complete-title">사전등록 완료!</h2>
+      <p class="complete-sub">정식 오픈 후 조건이 맞는 상대가 생기면<br>선택하신 방법으로 알려드릴게요.<br><br>지금은 매칭을 준비하고 있어요. 기대해주세요 💌</p>
+      <div class="complete-card">
+        <div class="complete-card-title">등록 정보</div>
+        <div class="complete-info-row"><span class="complete-info-label">닉네임</span><span class="complete-info-val" id="c-nickname"></span></div>
+        <div class="complete-info-row"><span class="complete-info-label">매력 점수</span><span class="complete-info-val" id="c-score"></span></div>
+        <div class="complete-info-row"><span class="complete-info-label">연락 방법</span><span class="complete-info-val" id="c-contact"></span></div>
+        <div class="complete-info-row"><span class="complete-info-label">상태</span><span class="complete-info-val" style="color:var(--primary)">매칭 대기 중 🔔</span></div>
+      </div>
+      <div class="delete-link-box">
+        <strong>⚠️ 삭제 토큰 (안전한 곳에 보관하세요)</strong>
+        이 토큰이 있어야 등록 정보와 사진을 삭제할 수 있어요.
+        <code id="delete-token-display"></code>
+        <button class="btn-copy" onclick="copyDeleteToken()">복사</button>
+      </div>
+      <button class="btn-cta" style="margin-top:20px" onclick="shareResult()">친구에게도 테스트 공유하기 🔗</button>
+      <button class="btn-retry" onclick="goHome()">처음으로 돌아가기</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──
+const state = {
+  photoBase64: null,
+  analysisResult: null,
+  regData: {},
+  regStep: 0,
+  registrationId: null,
+  deleteToken: null,
+};
+
+const PERSONAL_LIMIT = 5;
+const LS_COUNT_KEY = 'charm_analyze_count';
+
+// ── Section Management ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── Upload ──
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('file-input');
+const previewImg = document.getElementById('preview-img');
+const placeholder = document.getElementById('drop-placeholder');
+const btnAnalyze = document.getElementById('btn-analyze');
+const btnChange = document.getElementById('btn-change-photo');
+
+dropArea.addEventListener('click', () => fileInput.click());
+dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('drag-over'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
+dropArea.addEventListener('drop', (e) => {
+  e.preventDefault(); dropArea.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.photoBase64 = e.target.result;
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    dropArea.classList.add('has-preview');
+    btnAnalyze.disabled = false;
+    btnChange.style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetPhoto() {
+  state.photoBase64 = null;
+  previewImg.src = '';
+  previewImg.style.display = 'none';
+  placeholder.style.display = '';
+  dropArea.classList.remove('has-preview');
+  btnAnalyze.disabled = true;
+  btnChange.style.display = 'none';
+  fileInput.value = '';
+}
+
+function getPersonalCount() { return parseInt(localStorage.getItem(LS_COUNT_KEY) || '0'); }
+function incPersonalCount() { localStorage.setItem(LS_COUNT_KEY, getPersonalCount() + 1); }
+
+(function initCounter() {
+  const left = PERSONAL_LIMIT - getPersonalCount();
+  const el = document.getElementById('analyze-counter');
+  if (left <= 0) { el.textContent = '오늘 개인 분석 횟수를 모두 사용했어요.'; el.style.color = '#FF3B30'; }
+  else { el.textContent = `무료 분석 남은 횟수: ${left}회`; }
+})();
+
+async function startAnalyze() {
+  if (getPersonalCount() >= PERSONAL_LIMIT) { showToast('오늘 개인 분석 횟수(5회)를 모두 사용했어요.'); return; }
+  if (!state.photoBase64) return;
+
+  showSection('sec-analyzing');
+  const steps = ['step1','step2','step3','step4','step5'];
+  let si = 0;
+  const stepInterval = setInterval(() => {
+    if (si > 0) document.getElementById(steps[si-1])?.classList.replace('active','done');
+    if (si < steps.length) { document.getElementById(steps[si])?.classList.add('active'); si++; }
+  }, 800);
+
+  // Compress image before sending
+  const base64 = await compressImage(state.photoBase64, 800, 0.75);
+  const imageData = base64.replace(/^data:image\/\w+;base64,/, '');
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageData }),
+    });
+    clearInterval(stepInterval);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showSection('sec-upload');
+      showToast(err.message || '분석에 실패했어요. 다시 시도해주세요.');
+      return;
+    }
+    const data = await res.json();
+    incPersonalCount();
+    state.analysisResult = data;
+    renderResult(data);
+    showSection('sec-result');
+  } catch (e) {
+    clearInterval(stepInterval);
+    showSection('sec-upload');
+    showToast('네트워크 오류가 발생했어요. 다시 시도해주세요.');
+  }
+}
+
+function compressImage(dataUrl, maxSize, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ── Result rendering ──
+const BREAKDOWN_LABELS = {
+  firstImpression: { name: '첫인상', max: 35 },
+  expression: { name: '표정 & 친근감', max: 20 },
+  photoCondition: { name: '사진 컨디션', max: 15 },
+  stylePresence: { name: '스타일 & 분위기', max: 15 },
+  datingProfileFit: { name: '소개팅 적합도', max: 15 },
+};
+
+function renderResult(d) {
+  // Animate score
+  animateNumber('r-score', 0, d.score, 1200);
+  document.getElementById('r-percentile').textContent = `상위 ${d.percentile}%`;
+  document.getElementById('r-oneliner').textContent = `"${d.oneLiner}"`;
+  document.getElementById('r-summary').textContent = d.summary;
+  document.getElementById('r-confessions').textContent = d.confessionCount;
+  document.getElementById('r-relations').textContent = d.relationshipExp;
+  document.getElementById('r-age').textContent = d.estimatedAge;
+  document.getElementById('r-personality').textContent = d.personalityType;
+  document.getElementById('r-datescene').textContent = d.dateScene;
+  document.getElementById('r-style').textContent = d.stylePrediction;
+  document.getElementById('r-friendreaction').textContent = d.friendReaction;
+  document.getElementById('r-advice').textContent = d.advice;
+
+  // Tags
+  const tagsEl = document.getElementById('r-tags');
+  tagsEl.innerHTML = (d.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+
+  // Breakdown
+  const bdEl = document.getElementById('r-breakdown');
+  bdEl.innerHTML = '';
+  if (d.breakdown) {
+    Object.entries(d.breakdown).forEach(([key, val]) => {
+      const meta = BREAKDOWN_LABELS[key] || { name: key, max: 35 };
+      const pct = Math.round(val / meta.max * 100);
+      bdEl.innerHTML += `
+        <div class="breakdown-item">
+          <div class="breakdown-row">
+            <span class="breakdown-name">${meta.name}</span>
+            <span class="breakdown-score">${val} / ${meta.max}</span>
+          </div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:0%" data-pct="${pct}"></div></div>
+        </div>`;
+    });
+    setTimeout(() => {
+      document.querySelectorAll('.breakdown-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 300);
+  }
+}
+
+function animateNumber(id, from, to, duration) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function step(ts) {
+    const progress = Math.min((ts - start) / duration, 1);
+    el.textContent = Math.round(from + (to - from) * easeOut(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+function retryAnalyze() { resetPhoto(); showSection('sec-upload'); }
+
+function shareResult() {
+  const r = state.analysisResult;
+  const text = r
+    ? `AI 소개팅 매력 테스트 결과: ${r.score}점 (상위 ${r.percentile}%) "${r.oneLiner}" — 나도 해보기:`
+    : 'AI 소개팅 매력 테스트 해봤어? 나도 해봐!';
+  const url = location.href.split('?')[0];
+  if (navigator.share) {
+    navigator.share({ title: 'AI 소개팅 매력 테스트', text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(`${text} ${url}`).then(() => showToast('링크가 복사됐어요!'));
+  }
+}
+
+// ── Registration flow ──
+const STEPS = [
+  {
+    id: 'nickname', type: 'text', question: '어떻게 불러드릴까요?', hint: '소개팅에서 쓸 닉네임을 입력해주세요', placeholder: '닉네임 입력', required: true,
+  },
+  {
+    id: 'gender', type: 'radio', question: '성별을 알려주세요', hint: '매칭 기준으로 사용돼요',
+    options: [{ v: 'F', l: '여성' }, { v: 'M', l: '남성' }], required: true,
+  },
+  {
+    id: 'ageBand', type: 'radio', question: '연령대가 어떻게 되세요?', hint: '',
+    options: [
+      { v: '20s_early', l: '20대 초반' }, { v: '20s_mid', l: '20대 중반' }, { v: '20s_late', l: '20대 후반' },
+      { v: '30s_early', l: '30대 초반' }, { v: '30s_mid', l: '30대 중반' }, { v: '30s_late', l: '30대 후반' },
+      { v: '40s_early', l: '40대 초반' }, { v: '40s_mid', l: '40대 중반' }, { v: '40s_late', l: '40대 후반' },
+    ], required: true,
+  },
+  {
+    id: 'city', type: 'text', question: '주로 어디서 생활하세요?', hint: '예: 서울 강남, 경기 분당, 부산 해운대', placeholder: '생활 지역 입력', required: true,
+  },
+  {
+    id: 'job', type: 'text', question: '하시는 일이 어떻게 되세요?', hint: '직업이나 하는 일을 간단히 알려주세요', placeholder: '예: 디자이너, 개발자, 대학원생', required: false,
+  },
+  {
+    id: 'heightBand', type: 'radio', question: '키 구간을 알려주세요', hint: '',
+    options: [
+      { v: '150s', l: '150cm대' }, { v: '160_early', l: '160cm 초반' }, { v: '160_late', l: '160cm 후반' },
+      { v: '170_early', l: '170cm 초반' }, { v: '170_late', l: '170cm 후반' }, { v: '180+', l: '180cm 이상' },
+      { v: 'private', l: '비공개' },
+    ], required: false,
+  },
+  {
+    id: 'contactMethod', type: 'radio', question: '연락은 어떻게 받으실래요?', hint: '매칭 후 알림을 드릴 방법이에요',
+    options: [
+      { v: 'sms', l: '📱 문자' }, { v: 'kakao', l: '💬 카카오톡 ID' }, { v: 'email', l: '📧 이메일' }, { v: 'manual', l: '✋ 직접 확인할게요' },
+    ], required: true,
+  },
+  {
+    id: 'contact', type: 'contact', question: '연락처를 알려주세요', hint: '관리자 외에는 절대 공개되지 않아요. 매칭 성사 시에만 사용돼요.', placeholder: '', required: true,
+  },
+  {
+    id: 'datingPersonality', type: 'radio', question: '연애할 때 나는?', hint: '가장 가까운 걸 골라주세요',
+    options: [
+      { v: 'bold', l: '😊 먼저 말 거는 편' }, { v: 'slow', l: '🐢 천천히 친해지는 편' },
+      { v: 'playful', l: '😄 장난 많고 편한 편' }, { v: 'caring', l: '🤗 다정하고 챙기는 편' },
+    ], required: false,
+  },
+  {
+    id: 'firstDatePref', type: 'radio', question: '첫 데이트로 어디가 좋아요?', hint: '',
+    options: [
+      { v: 'cherry_blossom', l: '🌸 벚꽃길 산책' }, { v: 'exhibition', l: '🎨 전시회와 카페' },
+      { v: 'food', l: '🍜 맛집 탐험' }, { v: 'wine', l: '🍷 와인바에서 긴 대화' }, { v: 'hangang', l: '🌊 한강 피크닉' },
+    ], required: false,
+  },
+  {
+    id: 'balanceLooksHeight', type: 'balance', question: '외모 vs 키 밸런스 게임', hint: '솔직하게 골라주세요 (취향 파악용)',
+    optionsFemale: [
+      { v: 'a', l: '150cm 박보검' }, { v: 'b', l: '180cm 유해진' },
+      { v: 'c', l: '키보다 분위기' }, { v: 'd', l: '웃기면 키 안 봄' },
+    ],
+    optionsMale: [
+      { v: 'a', l: '150cm 장원영' }, { v: 'b', l: '175cm 박나래' },
+      { v: 'c', l: '키보다 분위기' }, { v: 'd', l: '웃기면 키 안 봄' },
+    ],
+    required: false,
+  },
+  {
+    id: 'balanceCareerMoney', type: 'balance', question: '돈 vs 대화 밸런스 게임', hint: '',
+    optionsFemale: [
+      { v: 'a', l: '월 300인데 대화 천재' }, { v: 'b', l: '월 900인데 답장 건조함' },
+      { v: 'c', l: '직업보다 생활 센스' }, { v: 'd', l: '돈보다 가치관' },
+    ],
+    optionsMale: [
+      { v: 'a', l: '월 300인데 취향 천재' }, { v: 'b', l: '월 900인데 카톡 재미없음' },
+      { v: 'c', l: '직업보다 생활 센스' }, { v: 'd', l: '돈보다 가치관' },
+    ],
+    required: false,
+  },
+  {
+    id: 'balanceChemistryStability', type: 'radio', question: '설렘 vs 안정감 밸런스 게임', hint: '이상형의 특징을 골라주세요',
+    options: [
+      { v: 'a', l: '⚡ 3시간 통화가 짧은 사람' }, { v: 'b', l: '🌙 말없이 있어도 편한 사람' },
+      { v: 'c', l: '😂 나를 웃겨주는 사람' }, { v: 'd', l: '🛡️ 나를 불안하게 안 하는 사람' },
+    ], required: false,
+  },
+  {
+    id: 'priority', type: 'priority', question: '이상형 우선순위를 정해주세요', hint: '합이 100이 되도록 슬라이더로 조절해주세요',
+    required: false,
+  },
+  {
+    id: 'extraMemo', type: 'textarea', question: '한마디 더 하고 싶다면?', hint: '자신을 소개하는 말, 원하는 조건 등 자유롭게', placeholder: '예: 고양이 좋아하는 분이면 좋겠어요. 주말에 같이 뭔가 하는 걸 좋아해요.', required: false,
+  },
+  {
+    id: 'consent', type: 'consent', question: '마지막으로 동의해주세요', hint: '사전등록을 위해 필요해요', required: true,
+  },
+];
+
+function goToRegister() {
+  state.regStep = 0;
+  state.regData = {
+    score: state.analysisResult?.score,
+    percentile: state.analysisResult?.percentile,
+    personalityType: state.analysisResult?.personalityType,
+    dateStyle: state.analysisResult?.dateScene,
+    priorityAppearance: 25, priorityHeight: 25, priorityWealth: 25, priorityCareer: 25,
+  };
+  renderStep();
+  showSection('sec-register');
+}
+
+function updateProgress() {
+  const pct = (state.regStep / (STEPS.length - 1)) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${state.regStep + 1} / ${STEPS.length}`;
+}
+
+function renderStep() {
+  updateProgress();
+  const step = STEPS[state.regStep];
+  const container = document.getElementById('step-container');
+  let html = `<div class="step-question">${step.question}</div>`;
+  if (step.hint) html += `<div class="step-hint">${step.hint}</div>`;
+
+  if (step.type === 'text' || step.type === 'textarea') {
+    const tag = step.type === 'textarea' ? 'textarea' : 'input';
+    const val = state.regData[step.id] || '';
+    html += step.type === 'textarea'
+      ? `<textarea class="text-input" id="step-input" placeholder="${step.placeholder}">${val}</textarea>`
+      : `<input class="text-input" id="step-input" type="text" placeholder="${step.placeholder}" value="${val}">`;
+
+  } else if (step.type === 'radio') {
+    html += '<div class="option-list">';
+    step.options.forEach(opt => {
+      const sel = state.regData[step.id] === opt.v ? 'selected' : '';
+      html += `<button class="option-btn ${sel}" onclick="selectOption('${step.id}','${opt.v}',this)">
+        <span class="option-check">${sel ? '✓' : ''}</span>${opt.l}
+      </button>`;
+    });
+    html += '</div>';
+
+  } else if (step.type === 'balance') {
+    const gender = state.regData.gender;
+    const opts = gender === 'M' ? step.optionsMale : step.optionsFemale;
+    html += '<div class="option-list">';
+    opts.forEach(opt => {
+      const sel = state.regData[step.id] === opt.v ? 'selected' : '';
+      html += `<button class="option-btn ${sel}" onclick="selectOption('${step.id}','${opt.v}',this)">
+        <span class="option-check">${sel ? '✓' : ''}</span>${opt.l}
+      </button>`;
+    });
+    html += '</div>';
+
+  } else if (step.type === 'contact') {
+    const method = state.regData.contactMethod;
+    const ph = method === 'sms' ? '010-0000-0000' : method === 'kakao' ? '카카오톡 ID' : method === 'email' ? '이메일 주소' : '직접 확인 (이름 입력)';
+    const val = state.regData.contact || '';
+    html += `<input class="text-input" id="step-input" type="${method === 'email' ? 'email' : 'text'}" placeholder="${ph}" value="${val}">`;
+
+  } else if (step.type === 'priority') {
+    const keys = ['appearance', 'height', 'wealth', 'career'];
+    const labels = { appearance: '외모/분위기', height: '키/피지컬', wealth: '재력/경제력', career: '직업/능력' };
+    const dataKeys = { appearance: 'priorityAppearance', height: 'priorityHeight', wealth: 'priorityWealth', career: 'priorityCareer' };
+    html += '<div class="slider-group">';
+    keys.forEach(k => {
+      const val = state.regData[dataKeys[k]] ?? 25;
+      html += `<div class="slider-item">
+        <div class="slider-row"><span class="slider-label">${labels[k]}</span><span class="slider-val" id="sv-${k}">${val}</span></div>
+        <input type="range" min="0" max="100" value="${val}" id="sl-${k}" oninput="rebalance('${k}', this.value)">
+      </div>`;
+    });
+    html += `</div><div class="slider-total" id="slider-total">합계: 100</div>`;
+
+  } else if (step.type === 'consent') {
+    const d = state.regData;
+    html += `<div class="consent-list">
+      <div class="consent-item" onclick="toggleConsent('consentData')">
+        <div class="consent-check ${d.consentData ? 'checked' : ''}" id="chk-consentData">${d.consentData ? '✓' : ''}</div>
+        <div class="consent-text"><strong>[필수] 개인정보 수집·이용 동의</strong>
+          닉네임, 연락처, 연령대, 지역, 소개팅 성향 정보와 사진을 수집·저장합니다. 매칭 서비스 제공 목적으로만 사용되며, 언제든 삭제 요청이 가능합니다.
+          <small>만 19세 이상만 이용 가능합니다.</small>
+        </div>
+      </div>
+      <div class="consent-item" onclick="toggleConsent('consentNotification')">
+        <div class="consent-check ${d.consentNotification ? 'checked' : ''}" id="chk-consentNotification">${d.consentNotification ? '✓' : ''}</div>
+        <div class="consent-text"><strong>[선택] 매칭 알림 동의</strong>
+          매칭 결과를 선택한 방법(문자/카카오/이메일)으로 연락드려도 될까요?
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const isRequired = step.required;
+  const isLast = state.regStep === STEPS.length - 1;
+  const btnLabel = isLast ? '🎉 사전등록 완료!' : '다음';
+  html += `<button class="btn-next" id="btn-next" onclick="regNext()">${btnLabel}</button>`;
+  if (!isRequired) html += `<button class="btn-skip" onclick="regSkip()">건너뛰기</button>`;
+
+  container.innerHTML = html;
+
+  // Auto-focus text inputs
+  const inp = document.getElementById('step-input');
+  if (inp) setTimeout(() => inp.focus(), 100);
+}
+
+function selectOption(id, val, el) {
+  state.regData[id] = val;
+  el.closest('.option-list').querySelectorAll('.option-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelector('.option-check').textContent = '';
+  });
+  el.classList.add('selected');
+  el.querySelector('.option-check').textContent = '✓';
+  // Auto-advance on radio
+  setTimeout(() => regNext(), 200);
+}
+
+function toggleConsent(key) {
+  state.regData[key] = !state.regData[key];
+  const chk = document.getElementById(`chk-${key}`);
+  chk.classList.toggle('checked', state.regData[key]);
+  chk.textContent = state.regData[key] ? '✓' : '';
+}
+
+function rebalance(changedKey, rawVal) {
+  const keys = ['appearance', 'height', 'wealth', 'career'];
+  const dataKeys = { appearance: 'priorityAppearance', height: 'priorityHeight', wealth: 'priorityWealth', career: 'priorityCareer' };
+  const vals = {};
+  keys.forEach(k => { vals[k] = k === changedKey ? parseInt(rawVal) : parseInt(document.getElementById(`sl-${k}`).value); });
+  vals[changedKey] = parseInt(rawVal);
+
+  const otherKeys = keys.filter(k => k !== changedKey);
+  const othersSum = 100 - vals[changedKey];
+  const currentOthersSum = otherKeys.reduce((s, k) => s + vals[k], 0);
+
+  if (currentOthersSum === 0) {
+    const each = Math.floor(othersSum / 3);
+    otherKeys.forEach((k, i) => { vals[k] = i === otherKeys.length - 1 ? othersSum - each * (otherKeys.length - 1) : each; });
+  } else {
+    otherKeys.forEach(k => { vals[k] = Math.max(0, Math.round(vals[k] / currentOthersSum * othersSum)); });
+    const total = Object.values(vals).reduce((a, b) => a + b, 0);
+    if (total !== 100) vals[otherKeys[0]] += 100 - total;
+  }
+
+  keys.forEach(k => {
+    document.getElementById(`sl-${k}`).value = vals[k];
+    document.getElementById(`sv-${k}`).textContent = vals[k];
+    state.regData[dataKeys[k]] = vals[k];
+  });
+  const total = Object.values(vals).reduce((a, b) => a + b, 0);
+  const el = document.getElementById('slider-total');
+  el.textContent = `합계: ${total}`;
+  el.className = 'slider-total' + (total !== 100 ? ' error' : '');
+}
+
+function getStepValue(step) {
+  if (step.type === 'text' || step.type === 'contact') {
+    return document.getElementById('step-input')?.value.trim() || '';
+  }
+  if (step.type === 'textarea') {
+    return document.getElementById('step-input')?.value.trim() || '';
+  }
+  return state.regData[step.id];
+}
+
+function regNext() {
+  const step = STEPS[state.regStep];
+
+  // Collect value
+  if (step.type === 'text' || step.type === 'textarea' || step.type === 'contact') {
+    const val = document.getElementById('step-input')?.value.trim() || '';
+    if (step.required && !val) { showToast('이 항목은 필수예요!'); return; }
+    state.regData[step.id] = val;
+  } else if (step.type === 'radio' || step.type === 'balance') {
+    if (step.required && !state.regData[step.id]) { showToast('하나를 선택해주세요!'); return; }
+  } else if (step.type === 'consent') {
+    if (!state.regData.consentData) { showToast('개인정보 수집·이용 동의는 필수예요.'); return; }
+  }
+
+  if (state.regStep < STEPS.length - 1) {
+    state.regStep++;
+    renderStep();
+  } else {
+    submitRegistration();
+  }
+}
+
+function regSkip() {
+  if (state.regStep < STEPS.length - 1) { state.regStep++; renderStep(); }
+}
+
+function regBack() {
+  if (state.regStep > 0) { state.regStep--; renderStep(); }
+  else { showSection('sec-result'); }
+}
+
+async function submitRegistration() {
+  const btn = document.getElementById('btn-next');
+  if (btn) { btn.disabled = true; btn.textContent = '등록 중...'; }
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        photo: state.photoBase64,
+        profile: state.regData,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message || '등록에 실패했어요. 다시 시도해주세요.'); if (btn) { btn.disabled = false; btn.textContent = '🎉 사전등록 완료!'; } return; }
+
+    state.registrationId = data.id;
+    state.deleteToken = data.deleteToken;
+
+    // Save to localStorage
+    const saved = JSON.parse(localStorage.getItem('charm_registrations') || '[]');
+    saved.push({ id: data.id, deleteToken: data.deleteToken, createdAt: new Date().toISOString() });
+    localStorage.setItem('charm_registrations', JSON.stringify(saved));
+
+    renderComplete();
+    showSection('sec-complete');
+  } catch (e) {
+    showToast('네트워크 오류가 발생했어요.');
+    if (btn) { btn.disabled = false; btn.textContent = '🎉 사전등록 완료!'; }
+  }
+}
+
+function renderComplete() {
+  document.getElementById('c-nickname').textContent = state.regData.nickname || '-';
+  document.getElementById('c-score').textContent = state.regData.score ? `${state.regData.score}점 (상위 ${state.regData.percentile}%)` : '-';
+  const methodMap = { sms: '문자', kakao: '카카오톡', email: '이메일', manual: '직접 확인' };
+  document.getElementById('c-contact').textContent = methodMap[state.regData.contactMethod] || state.regData.contactMethod;
+  document.getElementById('delete-token-display').textContent = state.deleteToken;
+}
+
+function copyDeleteToken() {
+  navigator.clipboard.writeText(state.deleteToken || '').then(() => showToast('삭제 토큰이 복사됐어요!'));
+}
+
+function goHome() { location.reload(); }
+
+// ── Toast ──
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+</script>
+</body>
+</html>
