@@ -21,7 +21,6 @@ export default async function handler(req, res) {
   const deleteToken = crypto.randomBytes(32).toString('hex');
   const deleteTokenHash = crypto.createHash('sha256').update(deleteToken).digest('hex');
 
-  // Save photo to private storage
   let photoUrl = null;
   if (photo) {
     const base64 = photo.replace(/^data:image\/\w+;base64,/, '');
@@ -34,6 +33,10 @@ export default async function handler(req, res) {
     photoUrl = blob.url;
   }
 
+  const appearanceScore = Number(profile.appearanceScore || profile.score || 0);
+  const charmScore = Number(profile.charmScore || 0);
+  const totalScore = Math.round(appearanceScore * 0.5 + charmScore * 0.5);
+
   const profileData = {
     id,
     nickname: profile.nickname,
@@ -44,17 +47,27 @@ export default async function handler(req, res) {
     heightBand: profile.heightBand || '',
     contactMethod: profile.contactMethod,
     contact: profile.contact,
-    score: profile.score || 0,
+
+    // Legacy
+    score: appearanceScore,
     percentile: profile.percentile || 0,
+
+    // New scoring
+    appearanceScore,
+    charmScore,
+    totalScore,
+    charmGrade: profile.charmGrade || '',
+    spec: profile.spec || null,
+
     personalityType: profile.personalityType || '',
     dateStyle: profile.dateStyle || '',
     balanceLooksHeight: profile.balanceLooksHeight || '',
     balanceCareerMoney: profile.balanceCareerMoney || '',
     balanceChemistryStability: profile.balanceChemistryStability || '',
-    priorityAppearance: profile.priorityAppearance || 25,
-    priorityHeight: profile.priorityHeight || 25,
-    priorityWealth: profile.priorityWealth || 25,
-    priorityCareer: profile.priorityCareer || 25,
+    priorityAppearance: profile.priorityAppearance ?? 25,
+    priorityHeight: profile.priorityHeight ?? 25,
+    priorityWealth: profile.priorityWealth ?? 25,
+    priorityCareer: profile.priorityCareer ?? 25,
     datingPersonality: profile.datingPersonality || '',
     firstDatePref: profile.firstDatePref || '',
     extraMemo: profile.extraMemo || '',
@@ -62,6 +75,12 @@ export default async function handler(req, res) {
     consentNotification: profile.consentNotification || false,
     photoUrl,
     deleteTokenHash,
+
+    // Matching state
+    givenLikes: [],
+    givenPasses: [],
+    matches: [],
+
     createdAt: new Date().toISOString(),
   };
 
@@ -70,14 +89,18 @@ export default async function handler(req, res) {
     allowOverwrite: true,
   });
 
-  // Update index
   await updateIndex({
     id,
     nickname: profile.nickname,
     gender: profile.gender,
     ageBand: profile.ageBand || '',
     city: profile.city || '',
-    score: profile.score || 0,
+    heightBand: profile.heightBand || '',
+    appearanceScore,
+    charmScore,
+    totalScore,
+    photoUrl,
+    score: appearanceScore,
     percentile: profile.percentile || 0,
     createdAt: new Date().toISOString(),
   });

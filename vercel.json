@@ -6,6 +6,8 @@
   },
   "rewrites": [
     { "source": "/admin", "destination": "/public/admin.html" },
+    { "source": "/match", "destination": "/public/match.html" },
+    { "source": "/matches", "destination": "/public/matches.html" },
     { "source": "/", "destination": "/public/index.html" }
   ]
 }

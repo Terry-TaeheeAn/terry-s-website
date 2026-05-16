@@ -424,8 +424,16 @@
         <div class="card-title">사진 팁</div>
         <div class="advice-box" id="r-advice"></div>
       </div>
+      <div class="card" style="background: linear-gradient(135deg, #FFF0F4, #FFF8F0); border: 1.5px solid var(--primary-light);">
+        <div class="card-title" style="color: var(--primary-dark)">💎 매력점수 부스트</div>
+        <p style="font-size:14px; color:var(--text); line-height:1.6; margin-bottom:12px">
+          외모 점수는 한 면일 뿐이에요. 소득·자산·학벌·직업·키를 입력하면<br>
+          <strong>AI가 매력점수를 추가로 산출</strong>해서 종합 매칭 점수를 만들어드려요.
+        </p>
+        <button class="btn-cta" onclick="goToSpec()">매력점수 받아보기 →</button>
+      </div>
       <div class="cta-section">
-        <button class="btn-cta" onclick="goToRegister()">💌 AI 소개팅 사전등록 하기</button>
+        <button class="btn-share" onclick="goToRegister()" style="margin-top:0">바로 사전등록만 할게요</button>
         <button class="btn-share" onclick="shareResult()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           친구에게 공유하기
@@ -433,6 +441,61 @@
         <button class="btn-retry" onclick="retryAnalyze()">↩ 다른 사진으로 다시 분석</button>
       </div>
       <p class="disclaimer">이 결과는 순수 엔터테인먼트 목적의 AI 분석으로, 실제 외모 평가와 무관합니다.<br>AI 분석 결과는 참고용이며 개인차가 있을 수 있어요.</p>
+    </div>
+  </section>
+
+  <!-- ── SPEC INPUT ── -->
+  <section id="sec-spec" class="section">
+    <div class="reg-header inner">
+      <button class="btn-back" onclick="specBack()">←</button>
+      <span class="reg-title">매력점수 부스트</span>
+    </div>
+    <div class="progress-bar-wrap inner">
+      <div class="progress-track"><div class="progress-fill" id="spec-prog-fill" style="width:0%"></div></div>
+      <div class="progress-text" id="spec-prog-text">1 / 5</div>
+    </div>
+    <div class="step-container inner" id="spec-step-container"></div>
+  </section>
+
+  <!-- ── CHARM RESULT (외모+매력+총점) ── -->
+  <section id="sec-charm" class="section">
+    <div class="result-header">
+      <div class="result-score-label">종합 매칭 점수</div>
+      <div class="result-score"><span id="cr-total">0</span><sup>점</sup></div>
+      <div class="result-percentile" id="cr-percentile">상위 -%</div>
+      <div class="result-oneliner" id="cr-grade-line"></div>
+    </div>
+    <div class="result-body">
+      <div class="card">
+        <div class="card-title">점수 구성</div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="cr-appearance" style="font-size:24px; color:var(--primary)">-</div>
+            <div class="stat-label">외모 점수</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="cr-charm" style="font-size:24px; color:var(--peach)">-</div>
+            <div class="stat-label">매력 점수</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="cr-grade" style="font-size:24px;">-</div>
+            <div class="stat-label">매력 등급</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">매력 점수 세부</div>
+        <div class="breakdown-list" id="cr-breakdown"></div>
+      </div>
+      <div class="card" style="background: linear-gradient(135deg, #FFF0F4, #FFF8F0); border: 1.5px solid var(--primary-light);">
+        <div class="card-title" style="color: var(--primary-dark)">💌 매칭 등록</div>
+        <p style="font-size:14px; line-height:1.6; margin-bottom:12px">
+          지금 등록하면 <strong>AI가 조건이 맞는 상대를</strong> 찾아드려요.<br>
+          매칭 시 좋아요/패스로 직접 선택할 수 있어요.
+        </p>
+        <button class="btn-cta" onclick="goToRegister()">사전등록하고 매칭 받기 →</button>
+      </div>
+      <button class="btn-retry" onclick="goToSpec()">↩ 스펙 다시 입력</button>
     </div>
   </section>
 
@@ -468,7 +531,8 @@
         <code id="delete-token-display"></code>
         <button class="btn-copy" onclick="copyDeleteToken()">복사</button>
       </div>
-      <button class="btn-cta" style="margin-top:20px" onclick="shareResult()">친구에게도 테스트 공유하기 🔗</button>
+      <button class="btn-cta" style="margin-top:20px" onclick="goToMatch()">💘 매칭 시작하기</button>
+      <button class="btn-share" onclick="shareResult()">친구에게도 테스트 공유하기 🔗</button>
       <button class="btn-retry" onclick="goHome()">처음으로 돌아가기</button>
     </div>
   </section>
@@ -486,6 +550,9 @@ const state = {
   regStep: 0,
   registrationId: null,
   deleteToken: null,
+  spec: {},
+  specStep: 0,
+  charmResult: null,
 };
 
 const PERSONAL_LIMIT = 5;
@@ -787,11 +854,18 @@ const STEPS = [
 function goToRegister() {
   state.regStep = 0;
   state.regData = {
+    ...state.regData,
     score: state.analysisResult?.score,
     percentile: state.analysisResult?.percentile,
     personalityType: state.analysisResult?.personalityType,
     dateStyle: state.analysisResult?.dateScene,
-    priorityAppearance: 25, priorityHeight: 25, priorityWealth: 25, priorityCareer: 25,
+    priorityAppearance: state.regData.priorityAppearance ?? 25,
+    priorityHeight: state.regData.priorityHeight ?? 25,
+    priorityWealth: state.regData.priorityWealth ?? 25,
+    priorityCareer: state.regData.priorityCareer ?? 25,
+    appearanceScore: state.regData.appearanceScore ?? state.analysisResult?.score,
+    charmScore: state.regData.charmScore ?? 0,
+    totalScore: state.regData.totalScore ?? state.analysisResult?.score,
   };
   renderStep();
   showSection('sec-register');
@@ -1016,7 +1090,12 @@ async function submitRegistration() {
 
 function renderComplete() {
   document.getElementById('c-nickname').textContent = state.regData.nickname || '-';
-  document.getElementById('c-score').textContent = state.regData.score ? `${state.regData.score}점 (상위 ${state.regData.percentile}%)` : '-';
+  if (state.regData.totalScore && state.regData.charmScore) {
+    document.getElementById('c-score').textContent =
+      `외모 ${state.regData.appearanceScore} / 매력 ${state.regData.charmScore} / 종합 ${state.regData.totalScore}`;
+  } else {
+    document.getElementById('c-score').textContent = state.regData.score ? `${state.regData.score}점 (상위 ${state.regData.percentile}%)` : '-';
+  }
   const methodMap = { sms: '문자', kakao: '카카오톡', email: '이메일', manual: '직접 확인' };
   document.getElementById('c-contact').textContent = methodMap[state.regData.contactMethod] || state.regData.contactMethod;
   document.getElementById('delete-token-display').textContent = state.deleteToken;
@@ -1027,6 +1106,246 @@ function copyDeleteToken() {
 }
 
 function goHome() { location.reload(); }
+
+// ── Spec input (매력점수 부스트) ──
+const SPEC_STEPS = [
+  {
+    id: 'gender', type: 'radio',
+    question: '성별을 알려주세요',
+    hint: '키 점수 환산에 사용돼요',
+    options: [{ v: 'F', l: '여성' }, { v: 'M', l: '남성' }],
+  },
+  {
+    id: 'income', type: 'radio',
+    question: '연소득은 어느 정도인가요?',
+    hint: '세전 연봉 기준 · 비공개로 저장돼요',
+    options: [
+      { v: 'under-3000', l: '3천 미만' },
+      { v: '3000-5000', l: '3천 ~ 5천' },
+      { v: '5000-7000', l: '5천 ~ 7천' },
+      { v: '7000-10000', l: '7천 ~ 1억' },
+      { v: '10000-15000', l: '1억 ~ 1.5억' },
+      { v: '15000-30000', l: '1.5억 ~ 3억' },
+      { v: '30000+', l: '3억 이상' },
+    ],
+  },
+  {
+    id: 'asset', type: 'radio',
+    question: '순자산은 어느 정도인가요?',
+    hint: '부동산 포함 순자산',
+    options: [
+      { v: 'under-5000', l: '5천 미만' },
+      { v: '5000-10000', l: '5천 ~ 1억' },
+      { v: '10000-30000', l: '1억 ~ 3억' },
+      { v: '30000-50000', l: '3억 ~ 5억' },
+      { v: '50000-100000', l: '5억 ~ 10억' },
+      { v: '100000-300000', l: '10억 ~ 30억' },
+      { v: '300000+', l: '30억 이상' },
+    ],
+  },
+  {
+    id: 'education', type: 'radio',
+    question: '최종 학력을 알려주세요',
+    hint: '',
+    options: [
+      { v: 'sky-med', l: 'SKY · 의치한약수' },
+      { v: 'inseoul-top', l: '서성한 · 중경외시' },
+      { v: 'inseoul', l: '인서울 4년제' },
+      { v: 'national', l: '지방거점 국립대' },
+      { v: 'regional', l: '그 외 4년제' },
+      { v: 'college', l: '전문대' },
+      { v: 'highschool', l: '고졸' },
+      { v: 'other', l: '기타' },
+    ],
+  },
+  {
+    id: 'jobCategory', type: 'radio',
+    question: '직업군은 어떻게 되세요?',
+    hint: '',
+    options: [
+      { v: 'professional', l: '전문직 (의·변·회·세 등)' },
+      { v: 'public', l: '공무원 · 공기업' },
+      { v: 'large-corp', l: '대기업 · 외국계' },
+      { v: 'mid-corp', l: '중견기업' },
+      { v: 'small-corp', l: '중소기업' },
+      { v: 'startup', l: '스타트업' },
+      { v: 'business', l: '자영업 · 사업가' },
+      { v: 'freelance', l: '프리랜서' },
+      { v: 'student', l: '학생 · 대학원생' },
+      { v: 'other', l: '기타' },
+    ],
+  },
+  {
+    id: 'height', type: 'number',
+    question: '키를 입력해주세요',
+    hint: '센티미터(cm) 단위, 숫자만',
+    placeholder: '예: 178',
+  },
+];
+
+function goToSpec() {
+  state.specStep = 0;
+  state.spec = { ...state.spec };
+  renderSpecStep();
+  showSection('sec-spec');
+}
+
+function specBack() {
+  if (state.specStep > 0) { state.specStep--; renderSpecStep(); }
+  else { showSection('sec-result'); }
+}
+
+function updateSpecProgress() {
+  const pct = ((state.specStep + 1) / SPEC_STEPS.length) * 100;
+  document.getElementById('spec-prog-fill').style.width = pct + '%';
+  document.getElementById('spec-prog-text').textContent = `${state.specStep + 1} / ${SPEC_STEPS.length}`;
+}
+
+function renderSpecStep() {
+  updateSpecProgress();
+  const step = SPEC_STEPS[state.specStep];
+  const container = document.getElementById('spec-step-container');
+  let html = `<div class="step-question">${step.question}</div>`;
+  if (step.hint) html += `<div class="step-hint">${step.hint}</div>`;
+
+  if (step.type === 'radio') {
+    html += '<div class="option-list">';
+    step.options.forEach(opt => {
+      const sel = state.spec[step.id] === opt.v ? 'selected' : '';
+      html += `<button class="option-btn ${sel}" onclick="selectSpecOption('${step.id}','${opt.v}',this)">
+        <span class="option-check">${sel ? '✓' : ''}</span>${opt.l}
+      </button>`;
+    });
+    html += '</div>';
+  } else if (step.type === 'number') {
+    const val = state.spec[step.id] || '';
+    html += `<input class="text-input" id="spec-input" type="number" inputmode="numeric" min="140" max="220" placeholder="${step.placeholder}" value="${val}">`;
+  }
+
+  const isLast = state.specStep === SPEC_STEPS.length - 1;
+  const btnLabel = isLast ? '✨ 매력점수 받기' : '다음';
+  html += `<button class="btn-next" id="spec-btn-next" onclick="specNext()">${btnLabel}</button>`;
+  container.innerHTML = html;
+
+  const inp = document.getElementById('spec-input');
+  if (inp) setTimeout(() => inp.focus(), 100);
+}
+
+function selectSpecOption(id, val, el) {
+  state.spec[id] = val;
+  el.closest('.option-list').querySelectorAll('.option-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelector('.option-check').textContent = '';
+  });
+  el.classList.add('selected');
+  el.querySelector('.option-check').textContent = '✓';
+  setTimeout(() => specNext(), 200);
+}
+
+async function specNext() {
+  const step = SPEC_STEPS[state.specStep];
+  if (step.type === 'number') {
+    const val = document.getElementById('spec-input')?.value.trim() || '';
+    const n = parseInt(val);
+    if (!n || n < 140 || n > 220) { showToast('키를 cm로 정확히 입력해주세요 (140~220)'); return; }
+    state.spec[step.id] = n;
+  } else if (!state.spec[step.id]) {
+    showToast('하나를 선택해주세요!');
+    return;
+  }
+
+  if (state.specStep < SPEC_STEPS.length - 1) {
+    state.specStep++;
+    renderSpecStep();
+  } else {
+    await computeCharmScore();
+  }
+}
+
+async function computeCharmScore() {
+  const btn = document.getElementById('spec-btn-next');
+  if (btn) { btn.disabled = true; btn.textContent = '계산 중...'; }
+  try {
+    const res = await fetch('/api/charm/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ spec: state.spec, gender: state.spec.gender }),
+    });
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    state.charmResult = data;
+    renderCharmResult();
+    showSection('sec-charm');
+  } catch (e) {
+    showToast('점수 계산 중 오류가 발생했어요.');
+    if (btn) { btn.disabled = false; btn.textContent = '✨ 매력점수 받기'; }
+  }
+}
+
+function renderCharmResult() {
+  const appearance = state.analysisResult?.score || 0;
+  const charm = state.charmResult.charmScore;
+  const total = Math.round(appearance * 0.5 + charm * 0.5);
+  animateNumber('cr-total', 0, total, 1200);
+  document.getElementById('cr-appearance').textContent = appearance;
+  document.getElementById('cr-charm').textContent = charm;
+  document.getElementById('cr-grade').textContent = state.charmResult.grade;
+  document.getElementById('cr-percentile').textContent = `매력 상위 ${state.charmResult.percentile}%`;
+  document.getElementById('cr-grade-line').textContent =
+    state.charmResult.grade === 'S' ? '"시장 최상위권의 매력"'
+    : state.charmResult.grade === 'A' ? '"눈에 띄는 매력 보유자"'
+    : state.charmResult.grade === 'B' ? '"안정적인 매력 보유자"'
+    : state.charmResult.grade === 'C' ? '"평균 이상의 매력"'
+    : '"성장 가능성 큰 원석"';
+
+  const BD_LABELS = {
+    income:    { name: '소득', max: 100 },
+    asset:     { name: '자산', max: 100 },
+    education: { name: '학벌', max: 100 },
+    job:       { name: '직업', max: 100 },
+    height:    { name: '키', max: 100 },
+  };
+  const bdEl = document.getElementById('cr-breakdown');
+  bdEl.innerHTML = '';
+  Object.entries(state.charmResult.breakdown).forEach(([k, v]) => {
+    const meta = BD_LABELS[k] || { name: k, max: 100 };
+    bdEl.innerHTML += `
+      <div class="breakdown-item">
+        <div class="breakdown-row">
+          <span class="breakdown-name">${meta.name}</span>
+          <span class="breakdown-score">${v} / 100</span>
+        </div>
+        <div class="breakdown-bar"><div class="breakdown-fill" style="width:0%" data-pct="${v}"></div></div>
+      </div>`;
+  });
+  setTimeout(() => {
+    document.querySelectorAll('#cr-breakdown .breakdown-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 300);
+
+  // Carry into reg data
+  state.regData.appearanceScore = appearance;
+  state.regData.charmScore = charm;
+  state.regData.totalScore = total;
+  state.regData.charmGrade = state.charmResult.grade;
+  state.regData.spec = { ...state.spec };
+  if (state.spec.gender) state.regData.gender = state.spec.gender;
+  // height for register form heightBand auto-derive
+  if (state.spec.height) {
+    const h = state.spec.height;
+    state.regData.heightBand = h >= 180 ? '180+'
+      : h >= 175 ? '170_late'
+      : h >= 170 ? '170_early'
+      : h >= 165 ? '160_late'
+      : h >= 160 ? '160_early'
+      : '150s';
+  }
+}
+
+function goToMatch() {
+  location.href = '/match';
+}
 
 // ── Toast ──
 function showToast(msg, duration = 2500) {

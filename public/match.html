@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>매칭 — AI 소개팅</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #FF6B8A; --primary-light: #FFD6DF; --primary-dark: #E84D6E;
+      --peach: #FFAA5A; --peach-light: #FFF0E0;
+      --bg: #FFF8F5; --surface: #FFFFFF;
+      --text: #1A1A2E; --text-secondary: #6B6B7B; --text-muted: #B0B0C0;
+      --border: #F0E8E8;
+      --shadow: 0 8px 32px rgba(255,107,138,0.18);
+    }
+    html, body { height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .top-title { font-size: 18px; font-weight: 800; }
+    .top-link { font-size: 13px; color: var(--primary-dark); font-weight: 600; text-decoration: none; }
+    .stage { flex: 1; padding: 8px 20px 28px; display: flex; flex-direction: column; }
+    .card-stack { position: relative; flex: 1; min-height: 480px; }
+    .swipe-card {
+      position: absolute; inset: 0; background: var(--surface); border-radius: 24px;
+      overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column;
+      transition: transform 0.35s cubic-bezier(.2,.8,.2,1), opacity 0.35s;
+    }
+    .swipe-card.gone-left  { transform: translateX(-130%) rotate(-18deg); opacity: 0; }
+    .swipe-card.gone-right { transform: translateX(130%) rotate(18deg); opacity: 0; }
+    .card-photo {
+      height: 60%; background: linear-gradient(135deg, var(--primary-light), var(--peach-light));
+      background-size: cover; background-position: center; position: relative;
+    }
+    .card-photo::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55), transparent 50%);
+    }
+    .card-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 18px; color: #fff; z-index: 2; }
+    .card-name { font-size: 22px; font-weight: 800; }
+    .card-meta { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+    .card-body { padding: 14px 18px; }
+    .stat-row { display: flex; justify-content: space-between; gap: 8px; }
+    .stat-pill {
+      flex: 1; background: var(--bg); border-radius: 12px; padding: 10px 12px; text-align: center;
+    }
+    .stat-pill .v { font-size: 18px; font-weight: 800; color: var(--primary); }
+    .stat-pill .l { font-size: 11px; color: var(--text-muted); }
+    .compat-line { margin-top: 12px; padding: 10px 12px; background: var(--peach-light); border-radius: 10px; font-size: 13px; color: #7A5000; text-align: center; }
+    .actions { display: flex; gap: 16px; padding: 16px 20px 8px; justify-content: center; }
+    .btn-act {
+      width: 64px; height: 64px; border-radius: 50%; border: none; cursor: pointer;
+      font-size: 26px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); transition: transform 0.15s;
+    }
+    .btn-act:active { transform: scale(0.92); }
+    .btn-pass { background: #fff; color: var(--text-muted); border: 2px solid var(--border); }
+    .btn-like { background: linear-gradient(135deg, var(--primary), var(--peach)); color: #fff; }
+    .empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; color: var(--text-muted); padding: 40px 24px;
+    }
+    .empty .emo { font-size: 56px; margin-bottom: 14px; }
+    .empty .t { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty .s { font-size: 14px; line-height: 1.6; }
+    .empty a, .empty button {
+      display: inline-block; margin-top: 18px; background: var(--primary); color: #fff;
+      border: none; padding: 12px 22px; border-radius: 100px; font-size: 14px; font-weight: 700;
+      text-decoration: none; cursor: pointer; font-family: inherit;
+    }
+    /* Match modal */
+    .modal-back {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center; z-index: 99; padding: 20px;
+    }
+    .modal-back.show { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 24px; max-width: 360px; width: 100%;
+      padding: 28px 24px; text-align: center;
+    }
+    .modal .big { font-size: 48px; margin-bottom: 10px; }
+    .modal h2 { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+    .contact-box { background: var(--bg); border-radius: 12px; padding: 12px; font-size: 14px; margin-bottom: 16px; }
+    .contact-box strong { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .modal button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .modal .btn-primary { background: var(--primary); color: #fff; margin-bottom: 8px; }
+    .modal .btn-secondary { background: var(--bg); color: var(--text-secondary); }
+    #toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--text); color: #fff; padding: 12px 20px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="top-title">💘 AI 매칭</div>
+    <a class="top-link" href="/matches">받은 매칭 →</a>
+  </div>
+  <div class="stage" id="stage">
+    <div class="empty" id="loading">
+      <div class="emo">⏳</div>
+      <div class="t">매칭 후보를 불러오는 중…</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="match-modal">
+  <div class="modal">
+    <div class="big">💝</div>
+    <h2>매칭 성공!</h2>
+    <p id="match-text">서로 좋아요를 했어요.<br>연락처를 확인하고 첫 메시지를 보내보세요.</p>
+    <div class="contact-box" id="contact-box"></div>
+    <button class="btn-primary" onclick="closeMatchModal()">계속 매칭하기</button>
+    <button class="btn-secondary" onclick="location.href='/matches'">매칭 목록 보기</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const auth = (() => {
+  const saved = JSON.parse(localStorage.getItem('charm_registrations') || '[]');
+  return saved.length ? saved[saved.length - 1] : null;
+})();
+
+if (!auth) {
+  document.getElementById('stage').innerHTML = `
+    <div class="empty">
+      <div class="emo">📝</div>
+      <div class="t">먼저 사전등록이 필요해요</div>
+      <div class="s">매칭에 참여하려면 외모 점수 + 매력 점수를 받고<br>사전등록을 완료해주세요.</div>
+      <a href="/">매력 테스트 시작하기</a>
+    </div>`;
+}
+
+let candidates = [];
+let currentIdx = 0;
+
+async function loadFeed() {
+  try {
+    const r = await fetch('/api/matches/feed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ myId: auth.id, myToken: auth.deleteToken, limit: 15 }),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showEmpty('🚫', '매칭을 불러올 수 없어요', data.error === 'INVALID_TOKEN' ? '인증 정보가 만료됐어요.' : '잠시 후 다시 시도해주세요.');
+      return;
+    }
+    candidates = data.candidates || [];
+    currentIdx = 0;
+    renderCurrent();
+  } catch (e) {
+    showEmpty('⚠️', '네트워크 오류', '연결을 확인하고 새로고침 해주세요.');
+  }
+}
+
+function ageBandLabel(b) {
+  const map = {
+    '20s_early':'20대 초반','20s_mid':'20대 중반','20s_late':'20대 후반',
+    '30s_early':'30대 초반','30s_mid':'30대 중반','30s_late':'30대 후반',
+    '40s_early':'40대 초반','40s_mid':'40대 중반','40s_late':'40대 후반',
+  };
+  return map[b] || '';
+}
+function heightBandLabel(b) {
+  const map = { '150s':'150cm대','160_early':'160 초반','160_late':'160 후반','170_early':'170 초반','170_late':'170 후반','180+':'180+','private':'비공개' };
+  return map[b] || '';
+}
+
+function renderCurrent() {
+  const stage = document.getElementById('stage');
+  if (currentIdx >= candidates.length) {
+    showEmpty('🌙', '오늘 보여드릴 후보가 없어요', '잠시 후 다시 확인해주세요.<br>새로 등록되는 분들이 곧 추가될 거예요.');
+    return;
+  }
+  const c = candidates[currentIdx];
+  stage.innerHTML = `
+    <div class="card-stack">
+      <div class="swipe-card" id="card-${currentIdx}">
+        <div class="card-photo" style="background-image:${c.photoUrl ? `url('${c.photoUrl}')` : 'none'}">
+          <div class="card-overlay">
+            <div class="card-name">${escapeHtml(c.nickname)} <span style="font-size:14px;font-weight:600;opacity:0.85">· ${c.charmGrade}</span></div>
+            <div class="card-meta">${ageBandLabel(c.ageBand)} · ${escapeHtml(c.city || '')} ${c.heightBand ? '· ' + heightBandLabel(c.heightBand) : ''}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stat-row">
+            <div class="stat-pill"><div class="v">${c.appearanceScore || '-'}</div><div class="l">외모</div></div>
+            <div class="stat-pill"><div class="v">${c.charmGrade}</div><div class="l">매력등급</div></div>
+            <div class="stat-pill"><div class="v">${c.compatibility}</div><div class="l">호환도</div></div>
+          </div>
+          <div class="compat-line">AI 추천 호환도 <strong>${c.compatibility}점</strong> · 당신의 우선순위와 잘 맞아요</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-act btn-pass" onclick="doSwipe('pass')">✕</button>
+      <button class="btn-act btn-like" onclick="doSwipe('like')">♥</button>
+    </div>`;
+}
+
+async function doSwipe(action) {
+  const c = candidates[currentIdx];
+  if (!c) return;
+  const cardEl = document.getElementById(`card-${currentIdx}`);
+  if (cardEl) cardEl.classList.add(action === 'like' ? 'gone-right' : 'gone-left');
+
+  try {
+    const r = await fetch('/api/matches/swipe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ myId: auth.id, myToken: auth.deleteToken, targetId: c.id, action }),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showToast(data.message || '오류가 발생했어요.');
+    } else if (data.matched) {
+      setTimeout(() => showMatchModal(data.match), 350);
+      currentIdx++;
+      return;
+    }
+  } catch (e) {
+    showToast('네트워크 오류');
+  }
+
+  setTimeout(() => { currentIdx++; renderCurrent(); }, 360);
+}
+
+function showMatchModal(m) {
+  const methodMap = { sms: '문자', kakao: '카카오톡 ID', email: '이메일', manual: '직접 확인' };
+  document.getElementById('contact-box').innerHTML = `
+    <strong>${escapeHtml(m.nickname)} 님의 ${methodMap[m.contactMethod] || '연락처'}</strong>
+    ${escapeHtml(m.contact || '')}
+  `;
+  document.getElementById('match-modal').classList.add('show');
+}
+function closeMatchModal() {
+  document.getElementById('match-modal').classList.remove('show');
+  renderCurrent();
+}
+
+function showEmpty(emo, t, s) {
+  document.getElementById('stage').innerHTML = `
+    <div class="empty"><div class="emo">${emo}</div><div class="t">${t}</div><div class="s">${s}</div>
+    <button onclick="loadFeed()">새로고침</button></div>`;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+if (auth) loadFeed();
+</script>
+</body>
+</html>
