@@ -3,78 +3,488 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>받은 매칭 — 설렘</title>
+  <title>매칭 목록 — 설렘</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --coral: #FF5A78; --plum: #1A0F18; --plum-2: #4A3540;
-      --bg: #F7F3EE; --surface: #fff; --sand-2: #E0D0C0;
-      --primary: var(--coral); --text: var(--plum); --muted: #9A8674;
-      --border: rgba(45,31,42,.14);
+      --coral: #FF5A78;
+      --coral-light: #FF8FA3;
+      --plum: #1A0F18;
+      --plum-2: #2D1F2A;
+      --plum-3: #4A3540;
+      --sand: #F7F3EE;
+      --sand-2: #E0D0C0;
+      --sand-3: #C8B8A8;
+      --text: #1A0F18;
+      --muted: #9A8674;
+      --surface: #fff;
+      --border: rgba(26,15,24,.10);
     }
-    body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); }
-    .wrap { max-width: 480px; margin: 0 auto; padding: 20px; }
-    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .top h1 { font-size: 20px; font-weight: 800; }
-    .top a { font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; }
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: var(--plum);
+      color: var(--sand);
+      min-height: 100dvh;
+    }
+
+    /* Top nav */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--plum);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--coral);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-action {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sand);
+      text-decoration: none;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background .15s;
+    }
+    .nav-action:hover { background: rgba(255,90,120,.16); border-color: rgba(255,90,120,.3); }
+
+    /* Page */
+    .wrap { max-width: 480px; margin: 0 auto; padding: 20px 20px 100px; }
+
+    /* Section title */
+    .section-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      margin-top: 28px;
+    }
+    .section-title:first-child { margin-top: 8px; }
+
+    /* Hero match card */
+    .hero-match {
+      background: var(--plum-2);
+      border: 1px solid rgba(255,90,120,.25);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .hero-photo {
+      width: 100%;
+      height: 200px;
+      background: var(--plum-3) center/cover no-repeat;
+      position: relative;
+    }
+    .hero-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, var(--plum-2) 100%);
+    }
+    .hero-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--coral);
+      color: #fff;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      z-index: 2;
+    }
+    .hero-body { padding: 14px 18px 18px; }
+    .hero-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--sand);
+      margin-bottom: 2px;
+    }
+    .hero-name em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 17px;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+    .hero-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .hero-contact {
+      background: rgba(255,90,120,.12);
+      border: 1px solid rgba(255,90,120,.25);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .hero-contact-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--coral-light);
+      margin-bottom: 3px;
+    }
+    .hero-contact-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--sand);
+      word-break: break-all;
+    }
+
+    /* Score chips row */
+    .score-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .score-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 20px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sand);
+    }
+    .score-chip span { color: var(--coral); }
+
+    /* List items */
     .match-item {
-      background: var(--surface); border-radius: 16px; padding: 14px;
-      display: flex; gap: 14px; align-items: center; margin-bottom: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      background: var(--plum-2);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 8px;
+      transition: border-color .15s;
     }
-    .avatar { width: 64px; height: 64px; border-radius: 50%; background: #eee center/cover; flex-shrink: 0; }
+    .match-item:hover { border-color: rgba(255,90,120,.2); }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--plum-3) center/cover no-repeat;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .avatar::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: conic-gradient(var(--coral), var(--coral-light), var(--coral));
+      z-index: -1;
+    }
+    .avatar-inner {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--plum-3) center/cover no-repeat;
+      border: 2px solid var(--plum-2);
+    }
+
     .info { flex: 1; min-width: 0; }
-    .name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-    .meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .contact { font-size: 13px; color: var(--primary); font-weight: 600; word-break: break-all; }
-    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-    .empty .emo { font-size: 48px; margin-bottom: 12px; }
+    .item-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--sand);
+      margin-bottom: 2px;
+    }
+    .item-name em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+    .item-meta { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .item-contact {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--coral-light);
+      word-break: break-all;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 72px 24px;
+    }
+    .empty-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 0 24px rgba(255,90,120,.4));
+    }
+    .empty-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--sand);
+      margin-bottom: 8px;
+    }
+    .empty-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: var(--coral);
+      color: #fff;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 24px;
+      padding: 12px 28px;
+      text-decoration: none;
+      transition: opacity .15s, transform .15s;
+    }
+    .btn-primary:hover { opacity: .9; transform: scale(1.02); }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }
+
+    .skel-item {
+      background: var(--plum-2);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .skel-avatar { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; }
+    .skel-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .skel-line { height: 14px; border-radius: 4px; }
+
+    /* Counters */
+    .stats-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--plum-2);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--coral);
+    }
+    .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <h1>💝 받은 매칭</h1>
-    <a href="/match">매칭 계속하기 →</a>
-  </div>
-  <div id="list"></div>
-</div>
-<script>
-const saved = JSON.parse(localStorage.getItem('charm_registrations') || '[]');
-const auth = saved.length ? saved[saved.length - 1] : null;
 
-if (!auth) {
-  document.getElementById('list').innerHTML = `<div class="empty"><div class="emo">📝</div>먼저 사전등록이 필요해요.<br><a href="/" style="color:var(--primary)">홈으로</a></div>`;
-} else {
-  fetch('/api/matches/list', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ myId: auth.id, myToken: auth.deleteToken }),
-  }).then(r => r.json()).then(data => {
-    const list = data.matches || [];
-    if (!list.length) {
-      document.getElementById('list').innerHTML = `<div class="empty"><div class="emo">💭</div>아직 성사된 매칭이 없어요.<br>매칭 탭에서 좋아요를 보내보세요.</div>`;
-      return;
-    }
-    const methodMap = { sms: '문자', kakao: '카카오톡', email: '이메일', manual: '직접 확인' };
-    document.getElementById('list').innerHTML = list.map(m => `
-      <div class="match-item">
-        <div class="avatar" style="background-image:${m.photoUrl ? `url('${m.photoUrl}')` : 'none'}"></div>
-        <div class="info">
-          <div class="name">${escapeHtml(m.nickname)}</div>
-          <div class="meta">${escapeHtml(m.city || '')} · ${new Date(m.matchedAt).toLocaleDateString('ko-KR')}</div>
-          <div class="contact">${methodMap[m.contactMethod] || ''}: ${escapeHtml(m.contact || '')}</div>
-        </div>
-      </div>
-    `).join('');
-  });
-}
+<nav class="nav">
+  <a class="nav-brand" href="/">설렘</a>
+  <a class="nav-action" href="/match">
+    <span>✦</span> 매칭 계속하기
+  </a>
+</nav>
+
+<div class="wrap">
+  <div id="root"></div>
+</div>
+
+<script>
+const methodMap = { sms: '문자', kakao: '카카오톡', email: '이메일', manual: '직접 확인' };
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+}
+
+function renderSkeletons() {
+  return `
+    <div class="section-title">💝 내 매칭</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="skeleton skel-line" style="height:28px;width:60%;margin:0 auto"></div><div class="stat-label" style="margin-top:6px">성사된 매칭</div></div>
+      <div class="stat-card"><div class="skeleton skel-line" style="height:28px;width:60%;margin:0 auto"></div><div class="stat-label" style="margin-top:6px">받은 좋아요</div></div>
+    </div>
+    ${[1,2,3].map(() => `
+      <div class="skel-item">
+        <div class="skeleton skel-avatar"></div>
+        <div class="skel-lines">
+          <div class="skeleton skel-line" style="width:45%"></div>
+          <div class="skeleton skel-line" style="width:65%"></div>
+          <div class="skeleton skel-line" style="width:55%"></div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderEmpty() {
+  return `
+    <div class="empty">
+      <span class="empty-icon">💭</span>
+      <div class="empty-title">아직 성사된 매칭이 없어요</div>
+      <div class="empty-sub">매칭 탭에서 마음에 드는 상대에게<br>좋아요를 보내보세요. 서로 좋아요하면<br>연락처가 공개돼요 ✨</div>
+      <a href="/match" class="btn-primary">✦ 매칭 시작하기</a>
+    </div>
+  `;
+}
+
+function renderNoAuth() {
+  return `
+    <div class="empty">
+      <span class="empty-icon">📝</span>
+      <div class="empty-title">사전 등록이 필요해요</div>
+      <div class="empty-sub">먼저 프로필을 등록하면<br>나를 좋아요한 상대를 확인할 수 있어요.</div>
+      <a href="/" class="btn-primary">프로필 등록하러 가기</a>
+    </div>
+  `;
+}
+
+function renderHero(m) {
+  const photoStyle = m.photoUrl ? `background-image:url('${escapeHtml(m.photoUrl)}')` : '';
+  const ageStr = m.age ? `, ${escapeHtml(String(m.age))}` : '';
+  return `
+    <div class="hero-match">
+      <div class="hero-photo" style="${photoStyle}">
+        <div class="hero-badge">✦ 최신 매칭</div>
+      </div>
+      <div class="hero-body">
+        <div class="hero-name">${escapeHtml(m.nickname)}<em>${escapeHtml(m.city || '')}${ageStr}</em></div>
+        <div class="hero-meta">${fmtDate(m.matchedAt)} 성사</div>
+        <div class="score-row">
+          ${m.totalScore ? `<div class="score-chip">✦ 종합 <span>${m.totalScore}</span></div>` : ''}
+          ${m.charmScore ? `<div class="score-chip">💎 매력 <span>${m.charmScore}</span></div>` : ''}
+        </div>
+        <div class="hero-contact" style="margin-top:14px">
+          <div class="hero-contact-label">${methodMap[m.contactMethod] || '연락처'}</div>
+          <div class="hero-contact-value">${escapeHtml(m.contact || '—')}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderItem(m) {
+  const photoStyle = m.photoUrl ? `background-image:url('${escapeHtml(m.photoUrl)}')` : '';
+  const ageStr = m.age ? ` <em>${m.age}</em>` : '';
+  return `
+    <div class="match-item">
+      <div class="avatar" style="${photoStyle}">
+        <div class="avatar-inner" style="${photoStyle}"></div>
+      </div>
+      <div class="info">
+        <div class="item-name">${escapeHtml(m.nickname)}${ageStr}</div>
+        <div class="item-meta">${escapeHtml(m.city || '')} · ${fmtDate(m.matchedAt)}</div>
+        <div class="item-contact">${methodMap[m.contactMethod] || ''}: ${escapeHtml(m.contact || '')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderList(matches) {
+  if (!matches.length) return renderEmpty();
+
+  const [hero, ...rest] = matches;
+  const totalMatches = matches.length;
+  const likesReceived = matches.length; // approximation for MVP
+
+  return `
+    <div class="section-title">💝 내 매칭</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">${totalMatches}</div>
+        <div class="stat-label">성사된 매칭</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${likesReceived}</div>
+        <div class="stat-label">연결된 인연</div>
+      </div>
+    </div>
+    ${renderHero(hero)}
+    ${rest.length ? `<div class="section-title" style="margin-top:24px">이전 매칭</div>${rest.map(renderItem).join('')}` : ''}
+  `;
+}
+
+async function init() {
+  const root = document.getElementById('root');
+  root.innerHTML = renderSkeletons();
+
+  const saved = JSON.parse(localStorage.getItem('charm_registrations') || '[]');
+  const auth = saved.length ? saved[saved.length - 1] : null;
+
+  if (!auth) {
+    root.innerHTML = renderNoAuth();
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/matches/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ myId: auth.id, myToken: auth.deleteToken }),
+    });
+    const data = await r.json();
+    root.innerHTML = renderList(data.matches || []);
+  } catch {
+    root.innerHTML = renderEmpty();
+  }
+}
+
+init();
 </script>
 </body>
 </html>
