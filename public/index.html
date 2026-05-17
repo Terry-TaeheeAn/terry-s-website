@@ -350,11 +350,88 @@
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* ── AI Chip ── */
+    .ai-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 999px;
+      background: rgba(45,31,42,.07);
+      font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600;
+      font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--plum-2); white-space: nowrap;
+    }
+    .ai-chip-dot { width:6px; height:6px; border-radius:50%; background:var(--coral); animation:chip-pulse 1.4s ease-in-out infinite; }
+    .ai-chip.dark { background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); }
+    .ai-chip.ok .ai-chip-dot { background:var(--ok); }
+    @keyframes chip-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    /* ── Token Stream ── */
+    .token-stream { font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.8; }
+    .token-line { display:flex; gap:8px; }
+    .token-line.done { opacity:.55; color:var(--plum); }
+    .token-line.active { opacity:1; color:var(--coral); }
+    .token-line.waiting { opacity:.22; color:var(--plum-2); }
+    .token-caret { display:inline-block; width:6px; height:11px; background:var(--coral); animation:blink .9s step-end infinite; vertical-align:text-bottom; margin-left:2px; }
+    @keyframes blink { 50%{opacity:0} }
+
+    /* ── AI Note ── */
+    .ai-note { background:var(--surface); border-radius:var(--r-md); padding:14px 16px; margin-bottom:14px; box-shadow:var(--shadow-card); }
+    .ai-note-tag { font-family:'Bricolage Grotesque',sans-serif; font-weight:600; font-size:10px; letter-spacing:.22em; color:#9A8674; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+    .ai-note-body { font-family:'Instrument Serif',serif; font-style:italic; font-size:16px; line-height:1.5; color:var(--plum); }
+
+    /* ── Upload redesign ── */
+    .upload-topbar { display:flex; justify-content:space-between; align-items:center; padding:52px 24px 0; max-width:480px; margin:0 auto; width:100%; }
+    .seollem-wordmark { font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15px; letter-spacing:.06em; color:var(--plum); display:flex; align-items:center; gap:7px; }
+    .token-teaser { background:var(--surface); border-radius:var(--r-md); padding:14px 16px; margin:20px 0; box-shadow:var(--shadow-card); }
+    .token-teaser-label { font-family:'Bricolage Grotesque',sans-serif; font-size:10px; font-weight:600; letter-spacing:.18em; color:#9A8674; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .mono-notice { text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.12em; color:var(--text-muted); margin-top:12px; }
+
+    /* ── Analyzing — dark mode ── */
+    #sec-analyzing { background:var(--plum) !important; justify-content:flex-start; }
+    .analyzing-wrap { width:100%; max-width:480px; margin:0 auto; padding:56px 24px 40px; color:#fff; }
+    .analyzing-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+    .analyzing-timer { font-family:'JetBrains Mono',monospace; font-size:13px; color:rgba(255,255,255,.45); }
+    .face-placeholder { width:100%; aspect-ratio:3/4; background:rgba(255,255,255,.05); border-radius:var(--r-lg); position:relative; overflow:hidden; margin-bottom:20px; border:1px solid rgba(255,255,255,.08); }
+    .face-placeholder-img { width:100%; height:100%; object-fit:cover; opacity:.5; display:none; }
+    .face-placeholder-icon { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:64px; opacity:.15; }
+    .scan-line { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--coral),transparent); animation:scan 1.6s ease-in-out infinite; top:0; }
+    @keyframes scan { 0%{top:0%;opacity:.9} 100%{top:100%;opacity:.3} }
+    .face-corner { position:absolute; width:20px; height:20px; border-color:rgba(255,90,120,.6); border-style:solid; }
+    .face-corner.tl { top:12px; left:12px; border-width:2px 0 0 2px; }
+    .face-corner.tr { top:12px; right:12px; border-width:2px 2px 0 0; }
+    .face-corner.bl { bottom:12px; left:12px; border-width:0 0 2px 2px; }
+    .face-corner.br { bottom:12px; right:12px; border-width:0 2px 2px 0; }
+    .face-step-label { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); font-family:'Bricolage Grotesque',sans-serif; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.6); white-space:nowrap; }
+    .analyzing-steps-dark { display:flex; flex-direction:column; gap:2px; margin-bottom:18px; }
+    .step-dark { display:flex; gap:10px; align-items:baseline; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.75; color:rgba(255,255,255,.2); }
+    .step-dark.done { color:rgba(255,255,255,.5); }
+    .step-dark.active { color:#fff; }
+    .step-dark .sp { flex-shrink:0; width:14px; }
+    .step-dark.done .sp { color:var(--ok); }
+    .step-dark.active .sp { color:var(--coral); }
+    .analyzing-progress-wrap { margin-top:4px; }
+    .analyzing-progress { height:3px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden; }
+    .analyzing-progress-fill { height:100%; background:linear-gradient(90deg,var(--peach),var(--coral)); border-radius:999px; transition:width .5s linear; width:0%; }
+    .analyzing-progress-label { display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,.3); margin-top:6px; }
+
+    /* ── Score header v2 ── */
+    #sec-result { background:var(--bg); justify-content:flex-start; padding-bottom:40px; }
+    .score-header-v2 { width:100%; max-width:480px; margin:0 auto; padding:52px 24px 24px; display:flex; gap:18px; align-items:flex-start; }
+    .score-photo-box { width:100px; height:130px; border-radius:var(--r-md); background:var(--sand); overflow:hidden; flex-shrink:0; }
+    .score-photo-box img { width:100%; height:100%; object-fit:cover; display:none; }
+    .score-photo-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:36px; }
+    .score-num-col { flex:1; padding-top:4px; }
+    .score-eyebrow { font-family:'Bricolage Grotesque',sans-serif; font-weight:600; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:2px; }
+    .score-big-num { font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:88px; line-height:1; letter-spacing:-.07em; color:var(--plum); font-variant-numeric:tabular-nums; }
+    .score-top-pct { font-family:'Instrument Serif',serif; font-style:italic; font-size:18px; color:var(--coral); margin-top:2px; line-height:1.3; }
+    .score-chips { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+    .score-chip-dark { padding:4px 10px; border-radius:999px; font-family:'Bricolage Grotesque',sans-serif; font-size:11px; font-weight:600; letter-spacing:.04em; background:var(--plum); color:#fff; }
+    .score-chip-ok { padding:4px 10px; border-radius:999px; font-family:'Bricolage Grotesque',sans-serif; font-size:10px; font-weight:600; letter-spacing:.1em; background:rgba(63,185,132,.15); color:var(--ok); }
+
     /* Responsive */
     @media (max-width: 390px) {
       .hero-title { font-size: 24px; }
-      .result-score { font-size: 60px; }
       .step-question { font-size: 20px; }
+      .score-big-num { font-size:72px; }
     }
   </style>
 </head>
@@ -363,68 +440,118 @@
 
   <!-- ── UPLOAD ── -->
   <section id="sec-upload" class="section active">
-    <div class="upload-header inner">
-      <div class="logo-badge" style="font-family:'Bricolage Grotesque',sans-serif; letter-spacing:.18em">
-        <svg width="14" height="14" viewBox="0 0 100 100" fill="none" style="flex-shrink:0">
-          <path d="M22 64 Q28 38 50 38 Q72 38 72 56 Q72 70 56 70 Q44 70 38 80" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/>
-          <circle cx="78" cy="30" r="6" fill="currentColor"/>
+    <div class="upload-topbar">
+      <div class="seollem-wordmark">
+        <svg width="16" height="16" viewBox="0 0 100 100" fill="none">
+          <path d="M22 64 Q28 38 50 38 Q72 38 72 56 Q72 70 56 70 Q44 70 38 80" stroke="var(--coral)" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <circle cx="78" cy="30" r="6" fill="var(--coral)"/>
         </svg>
-        SEOLLEM · 설렘
+        설렘
       </div>
-      <h1 class="hero-title" style="font-family:'Bricolage Grotesque','Pretendard',sans-serif; font-size:32px; letter-spacing:-.04em">AI가 본<br>당신의 매력,<br><span style="font-family:'Instrument Serif',serif; font-style:italic; color:var(--coral)">숫자로.</span></h1>
+      <div class="ai-chip"><span class="ai-chip-dot"></span>AI · LIVE</div>
+    </div>
+
+    <div class="upload-header inner" style="padding-top:24px">
+      <div class="token-teaser">
+        <div class="token-teaser-label"><span class="ai-chip-dot" style="width:5px;height:5px;border-radius:50%;background:var(--coral);display:inline-block;animation:chip-pulse 1.4s ease-in-out infinite"></span>AI · STREAM</div>
+        <div class="token-stream" id="home-token-stream">
+          <div class="token-line done"><span class="sp" style="color:var(--ok)">✓</span><span>오늘 2,418명 분석 완료</span></div>
+          <div class="token-line done"><span class="sp" style="color:var(--ok)">✓</span><span>매칭 후보 14명 식별</span></div>
+          <div class="token-line active"><span class="sp">▸</span><span>당신을 기다리는 중<span class="token-caret"></span></span></div>
+        </div>
+      </div>
+      <h1 style="font-family:'Bricolage Grotesque','Pretendard',sans-serif; font-weight:800; font-size:36px; line-height:1.2; letter-spacing:-.05em; margin-bottom:10px">
+        AI가 본<br>당신의 매력,<br>
+        <span style="font-family:'Instrument Serif',serif; font-style:italic; color:var(--coral)">숫자로.</span>
+      </h1>
       <p class="hero-sub">사진 한 장으로 외모 매력을 분석해드려요.<br>상위 몇 %인지 30초 안에 확인해보세요.</p>
     </div>
+
     <div class="upload-zone inner">
-      <div class="drop-area" id="drop-area">
+      <div class="drop-area" id="drop-area" style="border-radius:var(--r-lg)">
         <img id="preview-img" alt="미리보기">
         <div id="drop-placeholder">
-          <div class="drop-icon">🤳</div>
-          <div class="drop-title">사진을 올려주세요</div>
-          <div class="drop-sub">얼굴이 잘 보이는 사진이 좋아요<br>탭해서 사진 보관함 열기</div>
+          <div class="drop-icon" style="font-size:36px">🤳</div>
+          <div class="drop-title" style="font-family:'Bricolage Grotesque',sans-serif; letter-spacing:-.01em">사진을 올려주세요</div>
+          <div class="drop-sub">얼굴이 잘 보이는 사진<br>탭해서 보관함 열기</div>
         </div>
         <input type="file" id="file-input" accept="image/*">
       </div>
       <div class="upload-actions">
         <button class="btn-secondary" id="btn-change-photo" style="display:none" onclick="resetPhoto()">다시 선택</button>
-        <button class="btn-primary" id="btn-analyze" disabled onclick="startAnalyze()">분석 시작하기</button>
+        <button class="btn-primary" id="btn-analyze" disabled onclick="startAnalyze()"
+          style="font-family:'Bricolage Grotesque',sans-serif; font-size:15px; letter-spacing:-.01em; background:linear-gradient(180deg,#FF6B8A,#FF5A78,#F2486A); box-shadow:0 8px 24px rgba(255,90,120,.35)">
+          사진 올리고 AI 분석 시작
+        </button>
       </div>
-      <div class="notice-strip">
-        <strong>📸 사진 안내</strong><br>
-        분석 중에는 사진이 저장되지 않아요. 사진은 AI 분석에만 사용되고 즉시 삭제됩니다.
+      <div class="mono-notice" id="analyze-counter"></div>
+      <div class="notice-strip" style="border-radius:var(--r); background:var(--sand); border:none; color:var(--plum-2)">
+        분석 중 사진은 저장되지 않아요. AI 분석 후 즉시 삭제됩니다.
         사전등록 시에만 별도 동의 후 저장돼요.
       </div>
-      <div class="counter-info" id="analyze-counter"></div>
     </div>
   </section>
 
   <!-- ── ANALYZING ── -->
   <section id="sec-analyzing" class="section">
     <div class="analyzing-wrap">
-      <div class="analyzing-circle">
-        <span class="analyzing-icon">🔍</span>
+      <div class="analyzing-topbar">
+        <div class="ai-chip dark"><span class="ai-chip-dot"></span>AI · ANALYZING</div>
+        <div class="analyzing-timer" id="analyze-timer">0s</div>
       </div>
-      <div class="analyzing-title">AI가 분석하고 있어요</div>
-      <div class="analyzing-sub">소개팅 매력을 꼼꼼하게 살펴보는 중...<br>잠시만 기다려주세요</div>
-      <div class="analyzing-steps">
-        <div class="step-item" id="step1"><span class="step-dot"></span> 첫인상 파악 중</div>
-        <div class="step-item" id="step2"><span class="step-dot"></span> 표정 & 분위기 분석 중</div>
-        <div class="step-item" id="step3"><span class="step-dot"></span> 스타일 & 사진 컨디션 체크</div>
-        <div class="step-item" id="step4"><span class="step-dot"></span> 소개팅 매력 점수 계산 중</div>
-        <div class="step-item" id="step5"><span class="step-dot"></span> 결과 문구 작성 중</div>
+
+      <div class="face-placeholder" id="face-card">
+        <img id="face-preview-img" class="face-placeholder-img" alt="">
+        <div class="face-placeholder-icon">🧑</div>
+        <div class="scan-line"></div>
+        <div class="face-corner tl"></div>
+        <div class="face-corner tr"></div>
+        <div class="face-corner bl"></div>
+        <div class="face-corner br"></div>
+        <div class="face-step-label" id="face-step-label">FACE · DETECT</div>
+      </div>
+
+      <div class="analyzing-steps-dark">
+        <div class="step-dark" id="step1"><span class="sp">▸</span><span>얼굴 인식 & 랜드마크 추출</span></div>
+        <div class="step-dark" id="step2"><span class="sp">·</span><span>이목구비 균형 분석</span></div>
+        <div class="step-dark" id="step3"><span class="sp">·</span><span>눈빛 & 표정 분석</span></div>
+        <div class="step-dark" id="step4"><span class="sp">·</span><span>스타일 & 분위기 평가</span></div>
+        <div class="step-dark" id="step5"><span class="sp">·</span><span>매력 점수 산출 중</span></div>
+      </div>
+
+      <div class="analyzing-progress-wrap">
+        <div class="analyzing-progress"><div class="analyzing-progress-fill" id="analyze-progress-fill"></div></div>
+        <div class="analyzing-progress-label">
+          <span>AI ANALYZING</span>
+          <span id="analyze-pct">0%</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ── RESULT ── -->
   <section id="sec-result" class="section">
-    <div class="result-header">
-      <div class="result-score-label">소개팅 매력 점수</div>
-      <div class="result-score"><span id="r-score">0</span><sup>점</sup></div>
-      <div class="result-percentile" id="r-percentile">상위 -%</div>
-      <div class="result-oneliner" id="r-oneliner"></div>
-      <div class="result-tags" id="r-tags"></div>
+    <div class="score-header-v2">
+      <div class="score-photo-box">
+        <img id="r-photo" alt="분석 사진">
+        <div class="score-photo-placeholder" id="r-photo-placeholder">🧑</div>
+      </div>
+      <div class="score-num-col">
+        <div class="score-eyebrow">YOUR LOOK SCORE</div>
+        <div class="score-big-num" id="r-score">0</div>
+        <div class="score-top-pct">top <span id="r-pct-num">-</span>%</div>
+        <div class="score-chips">
+          <span class="score-chip-dark" id="r-grade-chip">—</span>
+          <span class="score-chip-ok">AI · 신뢰 96%</span>
+        </div>
+      </div>
     </div>
     <div class="result-body">
+      <div class="ai-note">
+        <div class="ai-note-tag"><span class="ai-chip-dot" style="width:5px;height:5px;border-radius:50%;background:var(--coral);display:inline-block"></span>AI · NOTED</div>
+        <div class="ai-note-body" id="r-oneliner"></div>
+      </div>
+      <div class="result-tags" id="r-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
       <div class="card">
         <div class="card-title">AI 분석 요약</div>
         <p class="summary-text" id="r-summary"></p>
@@ -670,14 +797,39 @@ async function startAnalyze() {
   if (!state.photoBase64) return;
 
   showSection('sec-analyzing');
+
+  // 분석 화면 사진 미리보기
+  const faceImg = document.getElementById('face-preview-img');
+  if (faceImg) { faceImg.src = state.photoBase64; faceImg.style.display = 'block'; document.querySelector('.face-placeholder-icon').style.display = 'none'; }
+
+  // 타이머
+  let elapsed = 0;
+  const timerEl = document.getElementById('analyze-timer');
+  const timerInterval = setInterval(() => { elapsed++; if (timerEl) timerEl.textContent = elapsed + 's'; }, 1000);
+
+  // 스텝 + 진행바
+  const STEP_LABELS = ['FACE · DETECT','RATIO · CALC','EXPRESSION','STYLE · EVAL','SCORE · GEN'];
   const steps = ['step1','step2','step3','step4','step5'];
   let si = 0;
   const stepInterval = setInterval(() => {
-    if (si > 0) document.getElementById(steps[si-1])?.classList.replace('active','done');
-    if (si < steps.length) { document.getElementById(steps[si])?.classList.add('active'); si++; }
-  }, 800);
+    if (si > 0) {
+      const prev = document.getElementById(steps[si-1]);
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('.sp').textContent = '✓'; }
+    }
+    if (si < steps.length) {
+      const cur = document.getElementById(steps[si]);
+      if (cur) { cur.classList.add('active'); cur.querySelector('.sp').textContent = '▸'; }
+      const lbl = document.getElementById('face-step-label');
+      if (lbl) lbl.textContent = STEP_LABELS[si] || '';
+      const fill = document.getElementById('analyze-progress-fill');
+      const pctEl = document.getElementById('analyze-pct');
+      const pct = Math.round((si + 1) / steps.length * 85);
+      if (fill) fill.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = pct + '%';
+      si++;
+    }
+  }, 900);
 
-  // Compress image before sending
   const base64 = await compressImage(state.photoBase64, 800, 0.75);
   const imageData = base64.replace(/^data:image\/\w+;base64,/, '');
 
@@ -687,7 +839,11 @@ async function startAnalyze() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: imageData }),
     });
-    clearInterval(stepInterval);
+    clearInterval(stepInterval); clearInterval(timerInterval);
+    const fill = document.getElementById('analyze-progress-fill');
+    const pctEl = document.getElementById('analyze-pct');
+    if (fill) fill.style.width = '100%';
+    if (pctEl) pctEl.textContent = '100%';
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       showSection('sec-upload');
@@ -697,10 +853,9 @@ async function startAnalyze() {
     const data = await res.json();
     incPersonalCount();
     state.analysisResult = data;
-    renderResult(data);
-    showSection('sec-result');
+    setTimeout(() => { renderResult(data); showSection('sec-result'); }, 400);
   } catch (e) {
-    clearInterval(stepInterval);
+    clearInterval(stepInterval); clearInterval(timerInterval);
     showSection('sec-upload');
     showToast('네트워크 오류가 발생했어요. 다시 시도해주세요.');
   }
@@ -733,10 +888,21 @@ const BREAKDOWN_LABELS = {
 };
 
 function renderResult(d) {
-  // Animate score
+  // Score header v2
   animateNumber('r-score', 0, d.score, 1200);
-  document.getElementById('r-percentile').textContent = `상위 ${d.percentile}%`;
-  document.getElementById('r-oneliner').textContent = `"${d.oneLiner}"`;
+  const pctEl = document.getElementById('r-pct-num');
+  if (pctEl) pctEl.textContent = d.percentile;
+  const gradeMap = { S:'S 등급', A:'A 등급', B:'B 등급', C:'C 등급', D:'D 등급' };
+  const grade = d.score >= 85 ? 'S' : d.score >= 75 ? 'A' : d.score >= 65 ? 'B' : d.score >= 55 ? 'C' : 'D';
+  const chipEl = document.getElementById('r-grade-chip');
+  if (chipEl) chipEl.textContent = gradeMap[grade] || grade;
+
+  // Show photo in score box
+  const rPhoto = document.getElementById('r-photo');
+  const rPhotoPlaceholder = document.getElementById('r-photo-placeholder');
+  if (rPhoto && state.photoBase64) { rPhoto.src = state.photoBase64; rPhoto.style.display = 'block'; if (rPhotoPlaceholder) rPhotoPlaceholder.style.display = 'none'; }
+
+  document.getElementById('r-oneliner').textContent = d.oneLiner || '';
   document.getElementById('r-summary').textContent = d.summary;
   document.getElementById('r-confessions').textContent = d.confessionCount;
   document.getElementById('r-relations').textContent = d.relationshipExp;
