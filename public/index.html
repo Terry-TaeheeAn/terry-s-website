@@ -412,6 +412,14 @@
         <div class="breakdown-list" id="r-breakdown"></div>
       </div>
       <div class="card">
+        <div class="card-title">세부 분석</div>
+        <div class="info-list">
+          <div class="info-item"><span class="info-icon">👁️</span><div class="info-content"><div class="info-label">눈빛 & 표정</div><div class="info-value" id="r-eye-detail"></div></div></div>
+          <div class="info-item"><span class="info-icon">✨</span><div class="info-content"><div class="info-label">스타일 & 그루밍</div><div class="info-value" id="r-style-detail"></div></div></div>
+          <div class="info-item"><span class="info-icon">🌟</span><div class="info-content"><div class="info-label">분위기 & 아우라</div><div class="info-value" id="r-vibe-detail"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-title">AI가 본 내 모습</div>
         <div class="info-list">
           <div class="info-item"><span class="info-icon">💝</span><div class="info-content"><div class="info-label">연애 캐릭터</div><div class="info-value" id="r-personality"></div></div></div>
@@ -677,11 +685,12 @@ function compressImage(dataUrl, maxSize, quality) {
 
 // ── Result rendering ──
 const BREAKDOWN_LABELS = {
-  firstImpression: { name: '첫인상', max: 35 },
-  expression: { name: '표정 & 친근감', max: 20 },
-  photoCondition: { name: '사진 컨디션', max: 15 },
-  stylePresence: { name: '스타일 & 분위기', max: 15 },
-  datingProfileFit: { name: '소개팅 적합도', max: 15 },
+  firstImpression: { name: '첫인상 & 호감도', max: 25 },
+  eyeExpression:   { name: '눈빛 & 표정',     max: 20 },
+  facialBalance:   { name: '이목구비 균형',    max: 15 },
+  styleGrooming:   { name: '스타일 & 그루밍',  max: 20 },
+  photoQuality:    { name: '사진 품질',        max: 10 },
+  vibeAura:        { name: '분위기 & 아우라',  max: 10 },
 };
 
 function renderResult(d) {
@@ -693,6 +702,9 @@ function renderResult(d) {
   document.getElementById('r-confessions').textContent = d.confessionCount;
   document.getElementById('r-relations').textContent = d.relationshipExp;
   document.getElementById('r-age').textContent = d.estimatedAge;
+  document.getElementById('r-eye-detail').textContent = d.eyeDetail || '';
+  document.getElementById('r-style-detail').textContent = d.styleDetail || '';
+  document.getElementById('r-vibe-detail').textContent = d.vibeDetail || '';
   document.getElementById('r-personality').textContent = d.personalityType;
   document.getElementById('r-datescene').textContent = d.dateScene;
   document.getElementById('r-style').textContent = d.stylePrediction;
