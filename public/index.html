@@ -3,32 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AI 소개팅 매력 테스트</title>
-  <meta name="description" content="AI가 내 소개팅 프로필 사진 매력도를 분석해드립니다. 상위 몇 %인지 확인해보세요!">
-  <meta property="og:title" content="AI 소개팅 매력 테스트">
-  <meta property="og:description" content="AI가 분석한 내 소개팅 매력 점수는?">
+  <title>설렘 — AI 매칭 소개팅</title>
+  <meta name="description" content="AI가 외모와 매력을 분석해 소개팅 상대를 찾아드립니다. 상위 몇 %인지 확인해보세요!">
+  <meta property="og:title" content="설렘 — AI 매칭 소개팅">
+  <meta property="og:description" content="AI가 분석한 내 매력 점수는?">
   <meta property="og:image" content="/og-image.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary: #FF6B8A;
-      --primary-light: #FFD6DF;
-      --primary-dark: #E84D6E;
-      --peach: #FFAA5A;
-      --peach-light: #FFF0E0;
-      --bg: #FFF8F5;
-      --surface: #FFFFFF;
-      --text: #1A1A2E;
-      --text-secondary: #6B6B7B;
-      --text-muted: #B0B0C0;
-      --border: #F0E8E8;
-      --radius: 20px;
-      --radius-sm: 12px;
-      --shadow: 0 4px 24px rgba(255,107,138,0.10);
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      /* ── Seollem Design Tokens ── */
+      --coral:      #FF5A78;
+      --coral-deep: #E03B5E;
+      --peach:      #FFB07A;
+      --aubergine:  #6B2E4E;
+      --gold:       #C9A36B;
+      --ok:         #3FB984;
+      --plum:       #1A0F18;
+      --plum-2:     #4A3540;
+      --cream:      #FFF8F5;
+      --bg:         #F7F3EE;
+      --surface:    #FFFFFF;
+      --sand:       #EDDFD2;
+      --sand-2:     #E0D0C0;
+      --line:       rgba(45,31,42,.08);
+      --line-2:     rgba(45,31,42,.14);
+
+      /* Backward-compat aliases */
+      --primary:       var(--coral);
+      --primary-light: rgba(255,90,120,.15);
+      --primary-dark:  var(--coral-deep);
+      --peach-light:   var(--sand);
+      --text:          var(--plum);
+      --text-secondary:var(--plum-2);
+      --text-muted:    #9A8674;
+      --border:        var(--line-2);
+
+      /* Shadows */
+      --shadow-card: 0 1px 2px rgba(45,31,42,.04), 0 8px 24px rgba(45,31,42,.06);
+      --shadow-lift: 0 8px 24px rgba(255,90,120,.18), 0 2px 6px rgba(45,31,42,.06);
+      --shadow-modal:0 12px 40px rgba(45,31,42,.18);
+      --shadow:    var(--shadow-lift);
+      --shadow-sm: var(--shadow-card);
+
+      /* Radius */
+      --r-sm:   8px;
+      --r:      14px;
+      --r-md:   18px;
+      --r-lg:   22px;
+      --r-xl:   24px;
+      --r-pill: 999px;
+      --radius:    var(--r-md);
+      --radius-sm: var(--r);
     }
     html, body { height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .font-display { font-family: 'Bricolage Grotesque', 'Pretendard', sans-serif; }
+    .font-serif  { font-family: 'Instrument Serif', Georgia, serif; }
+    .font-mono   { font-family: 'JetBrains Mono', monospace; }
+    [class*="score"], .result-score, .stat-value { font-variant-numeric: tabular-nums; }
     #app { min-height: 100vh; display: flex; flex-direction: column; }
 
     /* Section switching */
@@ -331,9 +364,15 @@
   <!-- ── UPLOAD ── -->
   <section id="sec-upload" class="section active">
     <div class="upload-header inner">
-      <div class="logo-badge">✨ AI CHARM MATCH</div>
-      <h1 class="hero-title">내 소개팅 매력,<br>AI에게 <span>솔직하게</span> 물어봤다</h1>
-      <p class="hero-sub">사진 한 장으로 소개팅 매력 점수를 분석해드려요.<br>상위 몇 %인지 바로 확인해보세요.</p>
+      <div class="logo-badge" style="font-family:'Bricolage Grotesque',sans-serif; letter-spacing:.18em">
+        <svg width="14" height="14" viewBox="0 0 100 100" fill="none" style="flex-shrink:0">
+          <path d="M22 64 Q28 38 50 38 Q72 38 72 56 Q72 70 56 70 Q44 70 38 80" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <circle cx="78" cy="30" r="6" fill="currentColor"/>
+        </svg>
+        SEOLLEM · 설렘
+      </div>
+      <h1 class="hero-title" style="font-family:'Bricolage Grotesque','Pretendard',sans-serif; font-size:32px; letter-spacing:-.04em">AI가 본<br>당신의 매력,<br><span style="font-family:'Instrument Serif',serif; font-style:italic; color:var(--coral)">숫자로.</span></h1>
+      <p class="hero-sub">사진 한 장으로 외모 매력을 분석해드려요.<br>상위 몇 %인지 30초 안에 확인해보세요.</p>
     </div>
     <div class="upload-zone inner">
       <div class="drop-area" id="drop-area">
