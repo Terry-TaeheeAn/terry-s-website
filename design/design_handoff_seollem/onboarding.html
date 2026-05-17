@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>설렘 · 30s Onboarding Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  html,body{margin:0;padding:0;background:#0a0a0a;color:#fff;font-family:'Pretendard',sans-serif;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+  :root{
+    --coral:#FF5A78; --peach:#FFB07A; --plum:#1A0F18; --plum-2:#2D1F2A;
+    --cream:#F7F3EE; --sand:#EDDFD2; --ok:#3FB984; --gold:#C9A36B;
+    --display:'Bricolage Grotesque','Pretendard',sans-serif;
+    --serif:'Instrument Serif',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  .countup{font-variant-numeric:tabular-nums}
+  @keyframes pulseGlow{0%,100%{opacity:.5}50%{opacity:1}}
+  .pulseGlow{animation:pulseGlow 1.4s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div id="root" style="position:absolute;inset:0"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="animations.jsx"></script>
+
+<script type="text/babel">
+// ============================================================
+// 설렘 · 30-second Onboarding Motion Prototype
+// Scenes:
+//   00:00 – 02:00  Logo bloom
+//   02:00 – 05:00  Home / Upload
+//   05:00 – 12:00  AI Analyzing (face wire + tokens)
+//   12:00 – 17:00  Look Score reveal (87 count-up)
+//   17:00 – 22:00  AI matching 14 candidates
+//   22:00 – 27:00  Swipe card · auto-like
+//   27:00 – 30:00  MATCHED moment
+// ============================================================
+
+const { useState, useEffect, useMemo } = React;
+
+// ── Phone shell (status bar + home indicator) ────────────────
+const Shell = ({ children, bg='#0a0a0a' }) => (
+  <div style={{position:'absolute',inset:0,background:bg,overflow:'hidden'}}>
+    {/* status bar */}
+    <div style={{position:'absolute',top:0,left:0,right:0,height:46,display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 28px 0',color:'#fff',mixBlendMode:'difference',fontSize:14,fontWeight:600,zIndex:50}}>
+      <span>9:41</span>
+      <span style={{fontSize:11}}>●●●● 5G</span>
+    </div>
+    {children}
+    <div style={{position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',width:134,height:5,borderRadius:3,background:'rgba(255,255,255,.35)',zIndex:50,mixBlendMode:'difference'}}/>
+  </div>
+);
+
+// ── Face wireframe (animated draw-in) ────────────────────────
+const AnimatedFaceWire = ({ progress=1, color='#fff', accent='var(--coral)' }) => {
+  const pts = [
+    [60,90],[80,86],[100,92],[120,92],[140,86],[160,90],
+    [76,108],[92,108],[128,108],[144,108],
+    [110,140],[100,158],[120,158],
+    [88,182],[110,184],[132,182],
+    [76,200],[110,210],[144,200],
+    [55,140],[165,140],
+  ];
+  const total = pts.length;
+  const shown = Math.floor(progress * total);
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 200 260" style={{position:'absolute', inset:0, mixBlendMode:'screen', pointerEvents:'none'}}>
+      <path d="M50 110 Q50 60 100 50 Q150 60 150 110 Q150 180 130 210 Q110 230 100 232 Q90 230 70 210 Q50 180 50 110 Z"
+        stroke={accent} strokeWidth="1" strokeDasharray="3 4"
+        strokeDashoffset={400 * (1 - progress)} pathLength="400" opacity={Math.min(1, progress*1.5)}/>
+      {pts.slice(0, shown).map(([x,y],i)=>(
+        <g key={i}>
+          <circle cx={x} cy={y} r="2.5" fill={color}/>
+          <circle cx={x} cy={y} r="5" fill="none" stroke={color} strokeWidth=".5" opacity=".4"/>
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+// ── Photo placeholder (striped) ──────────────────────────────
+const PhotoPH = ({ style }) => (
+  <div style={{
+    background:'repeating-linear-gradient(135deg,#3a2530 0 8px,#2d1f28 8px 16px)',
+    position:'relative', overflow:'hidden', ...style
+  }}/>
+);
+
+// ── Animated number counting up ──────────────────────────────
+const CountNum = ({ from=0, to=87, t, duration=1, size=200, color='var(--plum)' }) => {
+  const local = clamp(t/duration, 0, 1);
+  const eased = Easing.easeOutCubic(local);
+  const v = Math.round(from + (to - from) * eased);
+  return (
+    <span className="countup" style={{
+      fontFamily:'var(--display)', fontWeight:700, fontSize:size, lineHeight:.85, letterSpacing:'-.07em', color
+    }}>{v}</span>
+  );
+};
+
+// ── Scene 1 — Logo bloom (0–2s) ──────────────────────────────
+const SceneLogo = () => {
+  const { localTime } = useSprite();
+  const t = localTime;
+  const opacity = Easing.easeOutCubic(clamp(t/0.6, 0, 1)) - Easing.easeInCubic(clamp((t-1.4)/0.6, 0, 1));
+  const scale = 0.92 + 0.08 * Easing.easeOutCubic(clamp(t/1, 0, 1));
+  return (
+    <Shell bg="#1A0F18">
+      <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',opacity:clamp(opacity,0,1),transform:`scale(${scale})`}}>
+        <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+          <path d="M22 64 Q28 38 50 38 Q72 38 72 56 Q72 70 56 70 Q44 70 38 80"
+                stroke="#fff" strokeWidth="7" strokeLinecap="round" fill="none"
+                strokeDasharray="200" strokeDashoffset={200 * (1 - clamp(t/0.8,0,1))}/>
+          <circle cx="78" cy="30" r="6" fill="var(--coral)" opacity={clamp((t-0.6)/0.4,0,1)}/>
+        </svg>
+        <div style={{fontFamily:'Pretendard',fontWeight:800,fontSize:64,letterSpacing:'-.07em',color:'#fff',marginTop:22,opacity:clamp((t-0.4)/0.5,0,1)}}>설렘</div>
+        <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:11,letterSpacing:'.22em',color:'rgba(255,255,255,.5)',marginTop:8,opacity:clamp((t-0.8)/0.5,0,1)}}>AI MATCH · 2026</div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 2 — Home / Upload (2–5s) ───────────────────────────
+const SceneHome = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const inT = Easing.easeOutCubic(clamp(t/0.5, 0, 1));
+  const outT = Easing.easeInCubic(clamp((t-(duration-0.4))/0.4, 0, 1));
+  const op = inT - outT;
+  // photo drops in at t=1.5
+  const photoT = clamp((t-1.2)/0.6, 0, 1);
+  const photoDrop = Easing.easeOutBack(photoT);
+  return (
+    <Shell bg="#F7F3EE">
+      <div style={{position:'absolute',inset:0,padding:'56px 24px 0',color:'var(--plum)',opacity:op}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+            <path d="M22 64 Q28 38 50 38 Q72 38 72 56 Q72 70 56 70 Q44 70 38 80" stroke="var(--plum)" strokeWidth="7" strokeLinecap="round"/>
+            <circle cx="78" cy="30" r="6" fill="var(--coral)"/>
+          </svg>
+          <span className="pulseGlow" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:999,background:'rgba(45,31,42,.06)',fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.16em',color:'var(--plum)'}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--coral)'}}/>AI · LIVE
+          </span>
+        </div>
+        <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:11,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--coral)',marginTop:28}}>ISSUE · 24</div>
+        <h1 style={{fontFamily:'var(--display)',fontWeight:700,fontSize:54,lineHeight:.95,letterSpacing:'-.04em',margin:'12px 0 0'}}>
+          AI가 본<br/>
+          <span style={{fontFamily:'var(--serif)',fontStyle:'italic',fontWeight:400,color:'var(--coral)'}}>당신의 매력</span>,<br/>
+          숫자로.
+        </h1>
+
+        {/* photo drops in */}
+        <div style={{
+          marginTop:32, height:200, borderRadius:18, position:'relative', overflow:'hidden',
+          background:'repeating-linear-gradient(135deg,#e8d9cc 0 8px,#dfcbbb 8px 16px)',
+          transform:`translateY(${(1-photoDrop)*80}px) scale(${0.94 + 0.06*photoDrop})`,
+          opacity: photoT
+        }}>
+          <AnimatedFaceWire progress={clamp((t-1.8)/0.8,0,1)} color="#fff" accent="var(--coral)"/>
+          <span style={{position:'absolute',left:12,bottom:12,padding:'4px 10px',borderRadius:999,background:'rgba(0,0,0,.6)',color:'#fff',fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.08em',opacity:clamp((t-2.2)/0.4,0,1)}}>SCAN · {Math.floor(clamp((t-2.2)/0.6,0,1)*92)}%</span>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 3 — Analyzing (5–12s) ──────────────────────────────
+const SceneAnalyze = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const inT = Easing.easeOutCubic(clamp(t/0.4, 0, 1));
+  const outT = Easing.easeInCubic(clamp((t-(duration-0.4))/0.4, 0, 1));
+  const op = inT - outT;
+
+  const wireProg = clamp((t-0.4)/2, 0, 1);
+  const stages = [
+    { at: 0.5, label: '얼굴 인식 (210ms)', done: true },
+    { at: 1.5, label: '비율 분석 — 황금비 0.94', done: true },
+    { at: 3.0, label: '표정 추정 — confidence 0.85', done: t > 5.0 },
+    { at: 5.0, label: '매력 임베딩 벡터 생성', done: t > 5.8 },
+    { at: 5.8, label: '매칭 후보 14명 식별', done: t > 6.5 },
+  ];
+  const visibleStages = stages.filter(s => t >= s.at);
+
+  const progPct = Math.min(100, Math.floor(clamp(t/duration, 0, 1)*100));
+
+  return (
+    <Shell bg="var(--plum)">
+      <div style={{position:'absolute',inset:0,padding:'56px 24px 0',color:'#fff',opacity:op}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:18}}>‹</span>
+          <span className="pulseGlow" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:999,background:'rgba(255,255,255,.1)',fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.16em'}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--coral)'}}/>AI · ANALYZING
+          </span>
+          <span style={{fontFamily:'var(--mono)',fontSize:11,opacity:.6}}>{Math.floor(t).toString().padStart(2,'0')}s</span>
+        </div>
+
+        <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:10,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--coral)',marginTop:20}}>STEP {Math.min(5, Math.max(1, Math.floor(t/1.5)+1))} / 5</div>
+        <h2 style={{fontFamily:'var(--display)',fontWeight:700,fontSize:30,lineHeight:.95,letterSpacing:'-.03em',margin:'8px 0 0'}}>
+          {t < 2 ? '얼굴을 읽는 중' : t < 4 ? '비율을 계산 중' : t < 5.5 ? '표정을 추정 중' : '매칭 후보 찾는 중'}<span style={{fontFamily:'var(--serif)',fontStyle:'italic',color:'var(--peach)'}}>...</span>
+        </h2>
+
+        {/* face wire */}
+        <div style={{margin:'22px auto 0',width:260,height:320,borderRadius:22,overflow:'hidden',position:'relative'}}>
+          <PhotoPH style={{position:'absolute',inset:0,filter:'brightness(.7) saturate(.6)'}}/>
+          <AnimatedFaceWire progress={wireProg} color="#fff" accent="#FF6B8A"/>
+          {/* scan line */}
+          <div style={{position:'absolute',left:0,right:0,top:`${30+((t*30)%40)}%`,height:1.5,background:'linear-gradient(90deg,transparent,#FF6B8A,transparent)',boxShadow:'0 0 14px #FF6B8A'}}/>
+          {/* floating labels */}
+          <div style={{position:'absolute',top:18,left:14,fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',color:'#FFB07A',opacity:clamp((t-1)/0.4,0,1)}}>BROW · 92.4</div>
+          <div style={{position:'absolute',top:18,right:14,fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',color:'#FFB07A',opacity:clamp((t-2)/0.4,0,1)}}>EYE.R · 88.7</div>
+          <div style={{position:'absolute',bottom:18,right:14,fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',color:'#FFB07A',opacity:clamp((t-3)/0.4,0,1)}}>JAW · 84.1</div>
+          <div style={{position:'absolute',bottom:18,left:14,fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',color:'#FFB07A',opacity:clamp((t-4)/0.4,0,1)}}>SMILE · +.12</div>
+        </div>
+
+        {/* token stream */}
+        <div style={{marginTop:18,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'12px 14px',border:'1px solid rgba(255,255,255,.1)',fontFamily:'var(--mono)',fontSize:11,lineHeight:1.7}}>
+          <div style={{fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.22em',color:'rgba(255,255,255,.55)',marginBottom:6}}>AI · THINKING</div>
+          {visibleStages.map((s,i)=>{
+            const isLast = i === visibleStages.length - 1 && !s.done;
+            return (
+              <div key={i} style={{opacity: s.done ? .55 : 1}}>
+                <span style={{color: s.done ? 'var(--ok)' : 'var(--coral)'}}>{s.done ? '✓ ' : '▸ '}</span>
+                {s.label}
+                {isLast && <span className="pulseGlow" style={{display:'inline-block',width:7,height:11,marginLeft:4,verticalAlign:'middle',background:'var(--coral)'}}/>}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* progress */}
+        <div style={{position:'absolute',bottom:60,left:24,right:24,display:'flex',alignItems:'center',gap:8,fontFamily:'var(--mono)',fontSize:10,color:'rgba(255,255,255,.55)'}}>
+          <span style={{flex:1,height:2,background:'rgba(255,255,255,.1)',borderRadius:1,overflow:'hidden'}}>
+            <span style={{display:'block',height:'100%',width:`${progPct}%`,background:'linear-gradient(90deg,#FFB07A,#FF5A78)'}}/>
+          </span>
+          <span style={{fontVariantNumeric:'tabular-nums'}}>{progPct}%</span>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 4 — Score Reveal (12–17s) ──────────────────────────
+const SceneScore = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const inT = Easing.easeOutCubic(clamp(t/0.4, 0, 1));
+  const outT = Easing.easeInCubic(clamp((t-(duration-0.4))/0.4, 0, 1));
+  const op = inT - outT;
+  // count starts at 0.6
+  const countLocal = clamp(t-0.5, 0, 1.6);
+  return (
+    <Shell bg="#F7F3EE">
+      <div style={{position:'absolute',inset:0,padding:'56px 24px 0',color:'var(--plum)',opacity:op}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:18}}>‹</span>
+          <span className="pulseGlow" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:999,background:'rgba(45,31,42,.06)',fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.16em',color:'var(--plum)'}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--coral)'}}/>AI · RESULT
+          </span>
+          <span style={{width:18}}/>
+        </div>
+
+        <div style={{display:'flex',alignItems:'flex-end',gap:14,marginTop:22}}>
+          <div style={{width:108,height:140,borderRadius:14,overflow:'hidden',position:'relative',flexShrink:0,opacity:clamp((t-0.3)/0.4,0,1),transform:`translateX(${-(1-clamp((t-0.3)/0.4,0,1))*20}px)`}}>
+            <PhotoPH style={{position:'absolute',inset:0,filter:'brightness(.85)'}}/>
+            <AnimatedFaceWire progress={1} color="#fff" accent="var(--coral)"/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:10,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--coral)'}}>YOUR LOOK SCORE</div>
+            <div style={{marginTop:4}}>
+              <CountNum from={0} to={87} t={countLocal} duration={1.4} size={132}/>
+            </div>
+          </div>
+        </div>
+
+        <div style={{display:'flex',alignItems:'baseline',gap:12,marginTop:14,opacity:clamp((t-2)/0.5,0,1)}}>
+          <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:30,color:'var(--coral)',lineHeight:1}}>top 12%</div>
+          <div style={{fontFamily:'var(--display)',fontWeight:600,fontSize:12,letterSpacing:'.1em',color:'var(--plum-2)'}}>· A 등급</div>
+        </div>
+
+        {/* AI note slides in */}
+        <div style={{marginTop:22,background:'#fff',borderRadius:14,padding:'14px 16px',border:'1px solid rgba(45,31,42,.1)',opacity:clamp((t-2.4)/0.5,0,1),transform:`translateY(${(1-clamp((t-2.4)/0.5,0,1))*16}px)`}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--coral)'}}/>
+            <span style={{fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.22em',color:'#9a8674'}}>AI · NOTED</span>
+          </div>
+          <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:16,lineHeight:1.4,color:'var(--plum)'}}>
+            “Strong jaw line and balanced brow. The smile asymmetry is your charm.”
+          </div>
+        </div>
+
+        {/* stats stagger in */}
+        <div style={{marginTop:14}}>
+          {[['얼굴 비율','top 5%','92', 3.0],['표정 · 분위기','top 18%','85', 3.4],['스타일링','top 22%','84', 3.8]].map(([k,sub,num,delay],i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 0',borderBottom:'1px solid rgba(45,31,42,.08)',opacity:clamp((t-delay)/0.4,0,1),transform:`translateX(${(1-clamp((t-delay)/0.4,0,1))*16}px)`}}>
+              <div>
+                <div style={{fontFamily:'Pretendard',fontWeight:600,fontSize:14}}>{k}</div>
+                <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:10,letterSpacing:'.14em',color:'#9a8674',marginTop:2}}>{sub}</div>
+              </div>
+              <div className="countup" style={{fontFamily:'var(--display)',fontWeight:700,fontSize:28,letterSpacing:'-.03em'}}>{num}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 5 — AI matching candidates (17–22s) ────────────────
+const SceneMatching = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const inT = Easing.easeOutCubic(clamp(t/0.4, 0, 1));
+  const outT = Easing.easeInCubic(clamp((t-(duration-0.4))/0.4, 0, 1));
+  const op = inT - outT;
+  const num = Math.floor(clamp((t-1)/1.5, 0, 1) * 14);
+  return (
+    <Shell bg="#1A0F18">
+      <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:'#fff',opacity:op,padding:'0 28px'}}>
+        <span className="pulseGlow" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',borderRadius:999,background:'rgba(255,255,255,.1)',fontFamily:'var(--display)',fontWeight:600,fontSize:11,letterSpacing:'.18em'}}>
+          <span style={{width:7,height:7,borderRadius:'50%',background:'var(--coral)'}}/>AI · MATCHING
+        </span>
+
+        {/* concentric pulse rings around big number */}
+        <div style={{position:'relative',width:260,height:260,marginTop:30,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          {[0,1,2].map(i=>{
+            const ringT = ((t*0.7 + i*0.4) % 1.6) / 1.6;
+            return <div key={i} style={{position:'absolute',inset:0,borderRadius:'50%',border:'1px solid var(--coral)',opacity: 1 - ringT, transform:`scale(${0.4 + ringT * 1.0})`}}/>;
+          })}
+          <div style={{textAlign:'center'}}>
+            <div className="countup" style={{fontFamily:'var(--display)',fontWeight:700,fontSize:160,lineHeight:.85,letterSpacing:'-.07em',color:'#fff'}}>{num}</div>
+            <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:11,letterSpacing:'.22em',color:'var(--peach)',marginTop:8}}>CANDIDATES FOUND</div>
+          </div>
+        </div>
+
+        <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:24,color:'var(--peach)',marginTop:30,textAlign:'center',lineHeight:1.3,opacity:clamp((t-2.4)/0.5,0,1)}}>
+          Seoul · Gangnam-gu<br/>within 5km of you
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 6 — Swipe card (22–27s) ────────────────────────────
+const SceneSwipe = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const inT = Easing.easeOutCubic(clamp(t/0.4, 0, 1));
+  const outT = Easing.easeInCubic(clamp((t-(duration-0.4))/0.4, 0, 1));
+  const op = inT - outT;
+
+  // card slides in from below, holds, then auto-swipes right at t=3
+  let cardX = 0, cardY = 0, cardRot = 0;
+  if (t < 0.7) {
+    cardY = (1 - Easing.easeOutBack(t/0.7)) * 500;
+  } else if (t > 3.0) {
+    const sw = clamp((t-3.0)/0.6, 0, 1);
+    cardX = Easing.easeInQuad(sw) * 500;
+    cardRot = Easing.easeInQuad(sw) * 25;
+  }
+  const yesOp = t > 2.8 && t < 4.0 ? clamp((t-2.8)/0.3,0,1) : 0;
+
+  return (
+    <Shell bg="#1A0F18">
+      <div style={{position:'absolute',inset:0,padding:'52px 16px 16px',display:'flex',flexDirection:'column',opacity:op}}>
+        <div style={{display:'flex',gap:4,padding:'0 6px'}}>
+          {[1,1,0,0,0].map((on,i)=>(<span key={i} style={{flex:1,height:3,borderRadius:2,background:on?'#fff':'rgba(255,255,255,.25)'}}/>))}
+        </div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'12px 0',color:'#fff'}}>
+          <span className="pulseGlow" style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:999,background:'rgba(255,255,255,.1)',fontFamily:'var(--display)',fontWeight:600,fontSize:10,letterSpacing:'.16em'}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'var(--coral)'}}/>AI · 14 MATCHED
+          </span>
+        </div>
+
+        <div style={{
+          flex:1, marginTop:8, borderRadius:24, overflow:'hidden', position:'relative',
+          background:'#2D1F2A', transform:`translate(${cardX}px, ${cardY}px) rotate(${cardRot}deg)`,
+          boxShadow:'0 20px 60px rgba(0,0,0,.4)'
+        }}>
+          <PhotoPH style={{position:'absolute',inset:0,filter:'brightness(.85)'}}/>
+          <AnimatedFaceWire progress={1} color="#fff" accent="#FFB07A"/>
+          {/* yes overlay */}
+          <div style={{position:'absolute',top:60,left:24,fontFamily:'var(--serif)',fontStyle:'italic',fontSize:80,color:'#fff',lineHeight:1,transform:'rotate(-10deg)',opacity:yesOp,textShadow:'0 4px 30px rgba(0,0,0,.5)'}}>yes</div>
+          {/* TR scores */}
+          <div style={{position:'absolute',top:18,right:18,display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end'}}>
+            <span style={{padding:'5px 10px',borderRadius:999,background:'rgba(0,0,0,.55)',color:'#fff',fontFamily:'var(--display)',fontWeight:600,fontSize:11,letterSpacing:'.08em'}}>91 · S</span>
+            <span style={{padding:'5px 10px',borderRadius:999,background:'rgba(63,185,132,.92)',color:'#fff',fontFamily:'var(--display)',fontWeight:700,fontSize:11,letterSpacing:'.06em'}}>AI · FIT 96</span>
+          </div>
+          {/* bottom info */}
+          <div style={{position:'absolute',left:0,right:0,bottom:0,padding:'70px 22px 22px',background:'linear-gradient(180deg,transparent,rgba(0,0,0,.85))',color:'#fff'}}>
+            <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:11,letterSpacing:'.22em',color:'rgba(255,255,255,.7)',textTransform:'uppercase'}}>SEOUL · GANGNAM</div>
+            <div style={{display:'flex',alignItems:'baseline',gap:8,marginTop:6}}>
+              <span style={{fontFamily:'var(--display)',fontWeight:700,fontSize:42,lineHeight:.95,letterSpacing:'-.04em'}}>지윤</span>
+              <span style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:32,color:'#FFB07A'}}>, 27</span>
+            </div>
+            <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:14,color:'rgba(255,255,255,.85)',marginTop:10,lineHeight:1.5}}>
+              “same Saturday rhythm.”
+            </div>
+          </div>
+        </div>
+
+        {/* action buttons */}
+        <div style={{display:'flex',justifyContent:'space-between',padding:'16px 14px 4px',color:'#fff'}}>
+          <div style={{width:54,height:54,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.18)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>✕</div>
+          <div style={{height:54,padding:'0 24px',borderRadius:999,background:'#fff',color:'var(--plum)',display:'flex',alignItems:'center',gap:8,fontFamily:'var(--display)',fontWeight:700,fontSize:14,boxShadow: t > 2.5 ? '0 0 24px rgba(255,90,120,.5)' : 'none'}}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--coral)"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg>
+            좋아요
+          </div>
+          <div style={{width:54,height:54,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.18)',color:'var(--gold)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22}}>✦</div>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Scene 7 — MATCHED (27–30s) ───────────────────────────────
+const SceneMatched = () => {
+  const { localTime, duration } = useSprite();
+  const t = localTime;
+  const op = Easing.easeOutCubic(clamp(t/0.4, 0, 1));
+  // hearts/sparkles
+  const sparks = Array.from({length:18},(_,i)=>{
+    const s = ((t + i*0.13) % 1.4) / 1.4;
+    return { x: 8 + (i*53)%84, y: 8 + ((i*37)%64), o: 1-s, scale: 0.4+s*1.2, kind: i%3, delay: i*0.05 };
+  });
+  return (
+    <Shell bg="#1A0F18">
+      <div style={{position:'absolute',inset:0,opacity:op,color:'#fff'}}>
+        {/* sparkles */}
+        {sparks.map((s,i)=>(
+          <span key={i} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,color: s.kind===0?'var(--coral)':s.kind===1?'var(--peach)':'var(--gold)',opacity:s.o,fontSize:14+s.kind*4,transform:`scale(${s.scale})`}}>{s.kind===2?'♥':'✦'}</span>
+        ))}
+
+        <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'0 28px',textAlign:'center'}}>
+          <div style={{fontFamily:'var(--display)',fontWeight:500,fontSize:11,letterSpacing:'.22em',color:'var(--peach)',opacity:clamp(t/0.4,0,1)}}>AI · MATCHED · 96</div>
+          <div style={{fontFamily:'var(--display)',fontWeight:700,fontSize:74,lineHeight:.92,letterSpacing:'-.05em',marginTop:14,opacity:clamp((t-0.2)/0.5,0,1),transform:`scale(${0.95 + 0.05*Easing.easeOutBack(clamp((t-0.2)/0.7,0,1))})`}}>
+            <span style={{fontFamily:'var(--serif)',fontStyle:'italic',fontWeight:400}}>flutter</span><br/>
+            meets<br/>
+            flutter.
+          </div>
+
+          {/* two avatars sliding together */}
+          <div style={{display:'flex',marginTop:30,position:'relative'}}>
+            <div style={{width:104,height:104,borderRadius:'50%',overflow:'hidden',border:'4px solid var(--peach)',position:'relative',zIndex:2,transform:`translateX(${(1-Easing.easeOutBack(clamp((t-0.6)/0.6,0,1)))*-40}px)`}}>
+              <PhotoPH style={{position:'absolute',inset:0}}/>
+              <AnimatedFaceWire progress={1} color="#fff" accent="var(--coral)"/>
+            </div>
+            <div style={{width:104,height:104,borderRadius:'50%',overflow:'hidden',border:'4px solid var(--coral)',marginLeft:-22,transform:`translateX(${(1-Easing.easeOutBack(clamp((t-0.8)/0.6,0,1)))*40}px)`}}>
+              <PhotoPH style={{position:'absolute',inset:0}}/>
+              <AnimatedFaceWire progress={1} color="#fff" accent="var(--peach)"/>
+            </div>
+          </div>
+
+          <div style={{marginTop:22,fontSize:14,opacity:clamp((t-1.4)/0.5,0,1)}}>
+            <div style={{fontWeight:600}}>지윤 · 27 · 서울 강남</div>
+            <div style={{opacity:.6,fontSize:12,marginTop:4}}>kakao · jiyoon_27</div>
+          </div>
+
+          <div style={{marginTop:22, padding:'10px 18px', borderRadius:14, background:'var(--coral)', fontFamily:'var(--display)',fontWeight:700,fontSize:14, opacity:clamp((t-1.8)/0.5,0,1),transform:`translateY(${(1-clamp((t-1.8)/0.5,0,1))*10}px)`}}>
+            AI가 첫 메시지를 추천해드릴게요
+          </div>
+        </div>
+      </div>
+    </Shell>
+  );
+};
+
+// ── Tape (top progress strip) ────────────────────────────────
+const Tape = () => {
+  const t = useTime();
+  const segs = [
+    [0,2,'LOGO'],[2,5,'HOME'],[5,12,'AI · ANALYZING'],[12,17,'SCORE 87'],
+    [17,22,'MATCH 14'],[22,27,'SWIPE'],[27,30,'MATCHED 96'],
+  ];
+  return (
+    <div style={{position:'absolute',top:0,left:0,right:0,padding:'10px 14px',display:'flex',gap:4,zIndex:60,pointerEvents:'none'}}>
+      {segs.map(([s,e,l],i)=>{
+        const active = t >= s && t < e;
+        const done = t >= e;
+        return (
+          <div key={i} style={{flex:e-s, position:'relative'}}>
+            <div style={{height:2,borderRadius:1,background: done?'#fff' : active?'#fff':'rgba(255,255,255,.18)',overflow:'hidden'}}>
+              {active && <div style={{height:'100%',width:`${((t-s)/(e-s))*100}%`,background:'var(--coral)'}}/>}
+            </div>
+            <div style={{fontFamily:'var(--mono)',fontSize:8,letterSpacing:'.12em',color:active?'#fff':'rgba(255,255,255,.4)',marginTop:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{l}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Root ────────────────────────────────────────────────────
+const App = () => (
+  <Stage width={390} height={844} duration={30} background="#0a0a0a" persistKey="seollem-onboarding">
+    <Sprite start={0}  end={2}><SceneLogo/></Sprite>
+    <Sprite start={2}  end={5}><SceneHome/></Sprite>
+    <Sprite start={5}  end={12}><SceneAnalyze/></Sprite>
+    <Sprite start={12} end={17}><SceneScore/></Sprite>
+    <Sprite start={17} end={22}><SceneMatching/></Sprite>
+    <Sprite start={22} end={27}><SceneSwipe/></Sprite>
+    <Sprite start={27} end={30}><SceneMatched/></Sprite>
+    <Tape/>
+  </Stage>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
